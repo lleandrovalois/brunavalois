@@ -2,8 +2,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copia arquivos da aplicação
+# Copia arquivos e instala dependências
 COPY package*.json ./
+RUN npm install --omit=dev
+
 COPY . .
 
 # Define porta padrão

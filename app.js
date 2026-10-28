@@ -721,103 +721,350 @@ function applyCoupon() {
   }
 }
 
-// ================= CHECKOUT OFICIAL MERCADO PAGO =================
-async function payWithMercadoPago() {
+// ================= INTEGRAÇÃO MERCADO PAGO OFICIAL =================
+let pixPollingInterval = null;
+let currentPixOrderId = null;
+
+// Consulta a configuração pública do servidor (ambiente, modo sandbox, public key)
+async function initPublicPaymentConfig() {
+  try {
+    const res = await fetch('/api/config/public');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    window.MP_CONFIG = cfg;
+
+    const notice = document.getElementById('mpEnvNotice');
+    const badge = document.getElementById('mpEnvBadge');
+    if (notice && badge) {
+      if (cfg.isSandbox) {
+        notice.classList.remove('hidden');
+        badge.innerText = 'Sandbox (Testes)';
+      } else {
+        notice.classList.add('hidden');
+      }
+    }
+  } catch (err) {
+    console.warn('[MercadoPago] API offline ou executando em modo estático:', err.message);
+  }
+}
+
+// 1. Checkout Pro: Gera Preferência via Backend e Redireciona
+async function payWithCheckoutPro() {
   const cart = Storage.getCart();
   if (cart.length === 0) {
     showToast('Adicione ao menos uma joia à sacola antes de finalizar.');
     return;
   }
 
-  const paymentConfig = Storage.getPayment();
   const btn = document.getElementById('checkoutBtn');
   const originalHtml = btn ? btn.innerHTML : '';
 
-  // 1. Se houver Link Direto de Pagamento / Checkout Pro configurado no CMS
-  if (paymentConfig.checkoutUrl && paymentConfig.checkoutUrl.trim().startsWith('http')) {
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Abrindo Mercado Pago...';
-    }
-    showToast('Redirecionando para a interface oficial do Mercado Pago...');
-    setTimeout(() => {
-      window.location.href = paymentConfig.checkoutUrl.trim();
-    }, 600);
-    return;
-  }
-
-  // 2. Se houver Access Token oficial, criar Preference via API Mercado Pago
-  if (paymentConfig.accessToken && paymentConfig.accessToken.trim().startsWith('APP_USR')) {
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando ao Mercado Pago...';
-    }
-
-    try {
-      const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-      const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
-      const total = Math.max(0, subtotal - discount);
-
-      const items = cart.map(item => ({
-        id: item.id,
-        title: item.name,
-        quantity: item.quantity,
-        currency_id: 'BRL',
-        unit_price: Number(item.price)
-      }));
-
-      const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${paymentConfig.accessToken.trim()}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          items,
-          statement_descriptor: 'BRUNA VALOIS',
-          back_urls: {
-            success: window.location.origin + '?status=approved',
-            failure: window.location.origin + '?status=failure',
-            pending: window.location.origin + '?status=pending'
-          },
-          auto_return: 'approved'
-        })
-      });
-
-      const data = await res.json();
-      const targetUrl = paymentConfig.environment === 'sandbox' && data.sandbox_init_point
-        ? data.sandbox_init_point
-        : data.init_point;
-
-      if (targetUrl) {
-        showToast('Redirecionando para o Mercado Pago...');
-        window.location.href = targetUrl;
-        return;
-      }
-    } catch (err) {
-      console.warn('Erro ao gerar preferência no Mercado Pago:', err);
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = originalHtml;
-      }
-    }
-  }
-
-  // 3. Fallback: redirecionar para a interface oficial do Mercado Pago
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Abrindo Mercado Pago...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando ao Mercado Pago...';
   }
-  showToast('Redirecionando para a interface oficial do Mercado Pago...');
-  setTimeout(() => {
-    window.open('https://www.mercadopago.com.br/', '_blank');
+
+  try {
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
+    const total = Math.max(0, subtotal - discount);
+
+    const items = cart.map(item => ({
+      id: String(item.id),
+      title: item.name,
+      description: item.category || 'Alta Joalheria Bruna Valois',
+      unit_price: Number(item.price),
+      quantity: Number(item.quantity)
+    }));
+
+    const res = await fetch('/api/checkout/preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items,
+        payer: {
+          first_name: 'Cliente',
+          last_name: 'Valois',
+          email: 'atendimento@brunavalois.com.br'
+        },
+        metadata: {
+          coupon_code: activeCoupon ? activeCoupon.code : null,
+          discount_amount: discount,
+          total_final: total
+        }
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Falha ao gerar preferência no Mercado Pago.');
+    }
+
+    const checkoutUrl = data.data.checkout_url || data.data.init_point || data.data.sandbox_init_point;
+    if (checkoutUrl) {
+      showToast('Redirecionando para a interface oficial do Mercado Pago...');
+      window.location.href = checkoutUrl;
+      return;
+    }
+    throw new Error('URL de checkout não retornada pelo servidor.');
+  } catch (err) {
+    console.error('Erro no Checkout Pro:', err);
+    showToast(`Mercado Pago: ${err.message}`);
+  } finally {
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = originalHtml;
     }
-  }, 600);
+  }
 }
+
+// 2. Pix Transparente: Gera Cobrança Direta e Exibe Modal com QR Code e Copia e Cola
+async function payWithPixTransparente() {
+  const cart = Storage.getCart();
+  if (cart.length === 0) {
+    showToast('Adicione ao menos uma joia à sacola antes de finalizar.');
+    return;
+  }
+
+  const btn = document.getElementById('pixCheckoutBtn');
+  const originalHtml = btn ? btn.innerHTML : '';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Pix...';
+  }
+
+  try {
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
+    const total = Math.max(0, subtotal - discount);
+
+    const res = await fetch('/api/checkout/pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transaction_amount: total,
+        description: `Bruna Valois Joias - Pedido (${cart.length} itens)`,
+        payer: {
+          email: 'atendimento@brunavalois.com.br',
+          first_name: 'Cliente',
+          last_name: 'Valois'
+        }
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Falha ao gerar cobrança Pix.');
+    }
+
+    const pixData = data.data;
+    currentPixOrderId = pixData.order_id;
+
+    openPixModal(pixData, total);
+  } catch (err) {
+    console.error('Erro ao gerar Pix:', err);
+    showToast(`Erro no Pix: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }
+}
+
+function openPixModal(pixData, total) {
+  const modal = document.getElementById('pixModal');
+  if (!modal) return;
+
+  document.getElementById('pixOrderTotal').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  document.getElementById('pixOrderId').innerText = `#${pixData.order_id}`;
+  
+  const qrImage = document.getElementById('pixQrCodeImage');
+  const qrSpinner = document.getElementById('pixQrCodeSpinner');
+  const codeInput = document.getElementById('pixCodeInput');
+  const statusMsg = document.getElementById('pixStatusMessage');
+
+  codeInput.value = pixData.qr_code || '';
+  if (statusMsg) statusMsg.innerText = 'Aguardando pagamento no banco...';
+
+  // Exibe imagem do QR Code
+  if (pixData.qr_code_base64) {
+    qrImage.src = `data:image/png;base64,${pixData.qr_code_base64}`;
+    qrImage.classList.remove('hidden');
+    qrSpinner.classList.add('hidden');
+  } else if (pixData.qr_code) {
+    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixData.qr_code)}`;
+    qrImage.classList.remove('hidden');
+    qrSpinner.classList.add('hidden');
+  }
+
+  // Se estiver em sandbox, exibe o botão para simular aprovação
+  const simContainer = document.getElementById('pixSandboxSimulateContainer');
+  if (simContainer) {
+    if (window.MP_CONFIG?.isSandbox || pixData.environment === 'sandbox') {
+      simContainer.classList.remove('hidden');
+    } else {
+      simContainer.classList.add('hidden');
+    }
+  }
+
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    modal.firstElementChild.classList.remove('scale-95');
+  }, 10);
+
+  // Inicia Polling a cada 3 segundos para detecção do webhook em tempo real
+  startPixPolling(pixData.order_id);
+}
+
+function closePixModal() {
+  const modal = document.getElementById('pixModal');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+  }
+  stopPixPolling();
+}
+
+function startPixPolling(orderId) {
+  stopPixPolling();
+  const statusMsg = document.getElementById('pixStatusMessage');
+
+  pixPollingInterval = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      const order = json.data;
+
+      if (order && order.status === 'approved') {
+        stopPixPolling();
+        if (statusMsg) statusMsg.innerText = '✅ Pagamento Aprovado pelo Mercado Pago!';
+        showToast('🎉 Pagamento Pix Aprovado com Sucesso!');
+
+        const cart = Storage.getCart();
+        Storage.saveCart([]);
+        updateCartBadge();
+        renderCartItems();
+
+        setTimeout(() => {
+          closePixModal();
+          openReceiptModal({
+            transactionId: order.payment_id ? `#MP-${order.payment_id}` : `#${order.id}`,
+            dateStr: new Date(order.updated_at || Date.now()).toLocaleString('pt-BR'),
+            method: 'PIX Instantâneo (Mercado Pago)',
+            formattedTotal: (order.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+            items: order.items && order.items.length ? order.items : cart
+          });
+        }, 800);
+      }
+    } catch (err) {
+      console.warn('Erro na checagem de status Pix:', err.message);
+    }
+  }, 3000);
+}
+
+function stopPixPolling() {
+  if (pixPollingInterval) {
+    clearInterval(pixPollingInterval);
+    pixPollingInterval = null;
+  }
+}
+
+async function simulatePixApproval() {
+  if (!currentPixOrderId) return;
+  const btn = document.getElementById('pixSimulateApprovalBtn');
+  const original = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aprovando no Sandbox...';
+  }
+
+  try {
+    const res = await fetch(`/api/checkout/simulate-approval/${encodeURIComponent(currentPixOrderId)}`, {
+      method: 'POST'
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('⚡ Simulação Sandbox concluída com sucesso!');
+    } else {
+      showToast(data.message || 'Erro na simulação.');
+    }
+  } catch (err) {
+    showToast(`Erro ao simular: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  }
+}
+
+function copyPixCode() {
+  const input = document.getElementById('pixCodeInput');
+  const feedback = document.getElementById('pixCopiedFeedback');
+  if (!input || !input.value) return;
+
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    if (feedback) {
+      feedback.classList.remove('hidden');
+      setTimeout(() => feedback.classList.add('hidden'), 2500);
+    }
+    showToast('Código Pix copiado para a área de transferência!');
+  }).catch(() => {
+    document.execCommand('copy');
+    showToast('Código Pix copiado!');
+  });
+}
+
+// 3. Verificação de Retorno de Checkout (/checkout/success ou query status=approved)
+async function checkReturnUrlParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('status') || urlParams.get('collection_status');
+  const orderId = urlParams.get('order_id') || urlParams.get('external_reference');
+  const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id');
+
+  if (status === 'approved') {
+    showToast('🎉 Pagamento Aprovado no Mercado Pago! Parabéns!');
+
+    let orderData = null;
+    if (orderId) {
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+        if (res.ok) {
+          const json = await res.json();
+          orderData = json.data;
+        }
+      } catch {}
+    }
+
+    const cart = Storage.getCart();
+    Storage.saveCart([]);
+    updateCartBadge();
+    renderCartItems();
+
+    openReceiptModal({
+      transactionId: paymentId ? `#MP-${paymentId}` : (orderData?.id ? `#${orderData.id}` : '#MP-APROVADO'),
+      dateStr: new Date().toLocaleString('pt-BR'),
+      method: 'Mercado Pago (Checkout Pro)',
+      formattedTotal: orderData ? orderData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00',
+      items: orderData?.items || cart
+    });
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (status === 'failure') {
+    showToast('O pagamento não foi concluído no Mercado Pago. Tente novamente.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (status === 'pending') {
+    showToast('Seu pagamento está pendente de processamento no Mercado Pago.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 
 function openReceiptModal(order) {
   const modal = document.getElementById('receiptModal');
@@ -1483,7 +1730,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'cartDrawerBackdrop') closeCart();
   });
   document.getElementById('applyCouponBtn')?.addEventListener('click', applyCoupon);
-  document.getElementById('checkoutBtn')?.addEventListener('click', payWithMercadoPago);
+  
+  // Checkout Mercado Pago (Pro e Pix)
+  document.getElementById('checkoutBtn')?.addEventListener('click', payWithCheckoutPro);
+  document.getElementById('pixCheckoutBtn')?.addEventListener('click', payWithPixTransparente);
+
+  // 6. Listeners do Modal Pix
+  document.getElementById('closePixModalBtn')?.addEventListener('click', closePixModal);
+  document.getElementById('copyPixCodeBtn')?.addEventListener('click', copyPixCode);
+  document.getElementById('pixSimulateApprovalBtn')?.addEventListener('click', simulatePixApproval);
 
   // 7. Listeners do Recibo Pós-Venda
   document.getElementById('closeReceiptBtn')?.addEventListener('click', closeReceiptModal);
@@ -1506,4 +1761,9 @@ document.addEventListener('DOMContentLoaded', () => {
       mobileMenu.classList.toggle('hidden');
     });
   }
+
+  // 11. Inicializações da Integração Mercado Pago
+  initPublicPaymentConfig();
+  checkReturnUrlParams();
+
 });

@@ -27,3 +27,13 @@ yarn-error.log*
 
 # Node modules
 node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Local database / data files
+data/*.json
+!data/.gitkeep
+
