@@ -44,12 +44,12 @@ const config = {
     return Boolean(this.accessToken && this.accessToken.length > 10);
   },
 
-  // Retorna a URL de checkout adequada de acordo com o ambiente (sandbox vs produção)
+  // Retorna a URL de checkout adequada de acordo com o ambiente
   getCheckoutUrl(preference) {
     if (!preference) return null;
-    return this.isSandbox && preference.sandbox_init_point
-      ? preference.sandbox_init_point
-      : preference.init_point;
+    // O init_point oficial funciona de forma universal para credenciais de teste e produção,
+    // evitando a tela de erro /fatal/ do sandbox.mercadopago.com.br
+    return preference.init_point || preference.sandbox_init_point;
   },
 
   // Retorna resumo seguro para logs sem expor credenciais

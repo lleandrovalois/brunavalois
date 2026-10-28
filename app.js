@@ -803,7 +803,7 @@ function navigateToCheckout(e) {
   renderCheckoutSummary();
 }
 
-function navigateToTracking(e, orderId = null) {
+function navigateToTracking(e, orderId = null, preloadedOrder = null, pixDetails = null) {
   if (e && e.preventDefault) e.preventDefault();
   closeCart();
   currentRoute = 'tracking';
@@ -817,7 +817,11 @@ function navigateToTracking(e, orderId = null) {
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (orderId) {
+  if (preloadedOrder) {
+    const queryInput = document.getElementById('trackingQueryInput');
+    if (queryInput) queryInput.value = orderId || preloadedOrder.id;
+    renderOrderDetail(preloadedOrder, pixDetails);
+  } else if (orderId) {
     const queryInput = document.getElementById('trackingQueryInput');
     if (queryInput) queryInput.value = orderId;
     fetchAndDisplayOrder(orderId);
@@ -1274,8 +1278,7 @@ async function processOrderCheckout() {
     } else if (data.paymentMethod === 'pix') {
       showToast('Pedido registrado! Realize o pagamento Pix.');
       // Navega diretamente para a tela de acompanhamento com o pedido
-      navigateToTracking(null, data.orderId);
-      renderOrderDetail(data.order, data.pix);
+      navigateToTracking(null, data.orderId, data.order, data.pix);
     }
   } catch (err) {
     console.error('[Checkout] Erro:', err);

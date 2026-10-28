@@ -301,6 +301,10 @@ class PaymentService {
       throw new Error('ID do pagamento é obrigatório para consulta.');
     }
 
+    if (String(paymentId).startsWith('SANDBOX_') || isNaN(Number(paymentId))) {
+      return null;
+    }
+
     const tag = `[PaymentService] [${config.env.toUpperCase()}]`;
     console.log(`${tag} Consultando status do pagamento ${paymentId} na API do Mercado Pago...`);
 
