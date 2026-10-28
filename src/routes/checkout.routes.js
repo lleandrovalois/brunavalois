@@ -128,17 +128,20 @@ router.post('/process-order', async (req, res) => {
     }
 
     // 2. Validação de endereço
-    const isPickup = shipping?.method === 'Retirada no Ateliê';
+    const methodStr = String(shipping?.method || '').toUpperCase();
+    const isPickup = methodStr === 'RETIRADA' || methodStr.includes('RETIRADA') || methodStr.includes('ATELIÊ') || methodStr.includes('ATELIE');
+    const cepVal = String(shipping?.cep || shipping?.zip || '').trim();
+
     const finalShipping = {
-      cep: isPickup && !shipping?.cep ? '01001-000' : (shipping?.cep || ''),
-      street: isPickup && !shipping?.street ? 'Ateliê Bruna Valois - Showroom Exclusivo' : (shipping?.street || ''),
-      number: isPickup && !shipping?.number ? 'Showroom' : (shipping?.number || ''),
-      complement: shipping?.complement || '',
-      neighborhood: isPickup && !shipping?.neighborhood ? 'Jardins' : (shipping?.neighborhood || ''),
-      city: isPickup && !shipping?.city ? 'São Paulo' : (shipping?.city || ''),
-      state: isPickup && !shipping?.state ? 'SP' : (shipping?.state || ''),
-      method: shipping?.method || 'PAC com Seguro Total',
-      price: isPickup ? 0 : (Number(shipping?.price) || 0)
+      cep: isPickup && !cepVal ? '01419-001' : cepVal,
+      street: isPickup && !shipping?.street ? 'Ateliê Bruna Valois - Showroom Exclusivo' : String(shipping?.street || '').trim(),
+      number: isPickup && !shipping?.number ? 'Showroom' : String(shipping?.number || '').trim(),
+      complement: String(shipping?.complement || '').trim(),
+      neighborhood: isPickup && !shipping?.neighborhood ? 'Jardins' : String(shipping?.neighborhood || '').trim(),
+      city: isPickup && !shipping?.city ? 'São Paulo' : String(shipping?.city || '').trim(),
+      state: isPickup && !shipping?.state ? 'SP' : String(shipping?.state || '').trim().toUpperCase(),
+      method: isPickup ? 'Retirada no Ateliê Bruna Valois' : (methodStr === 'SEDEX' ? 'SEDEX Expresso com Seguro' : 'PAC com Seguro Total'),
+      price: isPickup ? 0 : (methodStr === 'SEDEX' ? 34.90 : 0)
     };
 
     if (!isPickup) {

@@ -928,6 +928,16 @@ function selectShippingMethod(method) {
     }
   });
 
+  const pickupBanner = document.getElementById('checkoutPickupBanner');
+  const addressContainer = document.getElementById('checkoutAddressFieldsContainer');
+  if (method === 'RETIRADA') {
+    pickupBanner?.classList.remove('hidden');
+    addressContainer?.classList.add('opacity-60');
+  } else {
+    pickupBanner?.classList.add('hidden');
+    addressContainer?.classList.remove('opacity-60');
+  }
+
   renderCheckoutSummary();
 }
 
@@ -1163,18 +1173,28 @@ async function processOrderCheckout() {
   }
 
   // Validação do endereço
-  const zip = document.getElementById('checkoutCep').value.trim();
-  const street = document.getElementById('checkoutStreet').value.trim();
-  const number = document.getElementById('checkoutNumber').value.trim();
-  const complement = document.getElementById('checkoutComplement').value.trim();
-  const neighborhood = document.getElementById('checkoutNeighborhood').value.trim();
-  const city = document.getElementById('checkoutCity').value.trim();
-  const state = document.getElementById('checkoutState').value.trim().toUpperCase();
+  const isPickup = selectedShippingMethod === 'RETIRADA';
+  let zip = document.getElementById('checkoutCep')?.value.trim() || '';
+  let street = document.getElementById('checkoutStreet')?.value.trim() || '';
+  let number = document.getElementById('checkoutNumber')?.value.trim() || '';
+  let complement = document.getElementById('checkoutComplement')?.value.trim() || '';
+  let neighborhood = document.getElementById('checkoutNeighborhood')?.value.trim() || '';
+  let city = document.getElementById('checkoutCity')?.value.trim() || '';
+  let state = document.getElementById('checkoutState')?.value.trim().toUpperCase() || '';
 
-  if (!zip || !street || !number || !neighborhood || !city || !state) {
-    showToast('Por favor, informe seu endereço completo para entrega segura.');
-    document.getElementById('checkoutCep').focus();
-    return;
+  if (isPickup) {
+    if (!zip) zip = '01419-001';
+    if (!street) street = 'Ateliê Bruna Valois - Showroom Exclusivo';
+    if (!number) number = 'Showroom';
+    if (!neighborhood) neighborhood = 'Jardins';
+    if (!city) city = 'São Paulo';
+    if (!state) state = 'SP';
+  } else {
+    if (!zip || !street || !number || !neighborhood || !city || !state) {
+      showToast('Por favor, informe seu endereço completo para entrega segura.');
+      document.getElementById('checkoutCep')?.focus();
+      return;
+    }
   }
 
   // Salva no storage para conveniência
@@ -1212,6 +1232,7 @@ async function processOrderCheckout() {
       shipping: {
         method: selectedShippingMethod,
         zip,
+        cep: zip,
         street,
         number,
         complement,

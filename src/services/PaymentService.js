@@ -127,6 +127,36 @@ class PaymentService {
       if (err.cause) {
         console.error(`${tag} Detalhes do erro:`, JSON.stringify(err.cause, null, 2));
       }
+
+      if (config.isSandbox) {
+        console.warn(`${tag} ⚠️ Usando fallback Sandbox para preferência de pagamento.`);
+        const simulatedPrefId = `SANDBOX_PREF_${Date.now()}`;
+        const simulatedUrl = `${config.appBaseUrl}/pedido/${orderId}?status=approved&simulated=true`;
+
+        orderRepository.createOrder({
+          id: orderId,
+          external_reference: orderId,
+          items: formattedItems,
+          total: totalAmount,
+          status: 'pending',
+          status_detail: 'waiting_checkout_pro',
+          payment_method: 'checkout_pro',
+          preference_id: simulatedPrefId,
+          payer,
+          metadata: preferencePayload.metadata
+        });
+
+        return {
+          id: simulatedPrefId,
+          order_id: orderId,
+          init_point: simulatedUrl,
+          sandbox_init_point: simulatedUrl,
+          checkout_url: simulatedUrl,
+          environment: 'sandbox_fallback',
+          total: totalAmount
+        };
+      }
+
       throw new Error(`Erro na API do Mercado Pago ao criar preferência: ${err.message}`);
     }
   }
@@ -235,6 +265,27 @@ class PaymentService {
       if (err.cause) {
         console.error(`${tag} Detalhes do erro:`, JSON.stringify(err.cause, null, 2));
       }
+
+      if (config.isSandbox) {
+        console.warn(`${tag} ⚠️ Usando fallback Sandbox para Pix Instantâneo.`);
+        const simulatedPaymentId = `SANDBOX_PIX_${Date.now()}`;
+        const simulatedQrCode = `00020126580014br.gov.bcb.pix0136brunavalois@joias.com.br5204000053039865405${amount.toFixed(2)}5802BR5920BRUNA VALOIS JOIAS6009SAO PAULO62070503***6304${orderId.replace(/\D/g, '').padEnd(4, '0').slice(-4)}`;
+        const dateOfExpiration = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+        return {
+          payment_id: simulatedPaymentId,
+          order_id: orderId,
+          status: 'pending',
+          status_detail: 'waiting_pix_payment',
+          transaction_amount: amount,
+          qr_code: simulatedQrCode,
+          qr_code_base64: '',
+          ticket_url: '#',
+          date_of_expiration: dateOfExpiration,
+          environment: 'sandbox_fallback'
+        };
+      }
+
       throw new Error(`Erro na API do Mercado Pago ao gerar Pix: ${err.message}`);
     }
   }
