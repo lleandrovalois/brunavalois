@@ -214,6 +214,7 @@ const Storage = {
 
   getCart: () => JSON.parse(localStorage.getItem('BV_CART')) || [],
   setCart: (data) => localStorage.setItem('BV_CART', JSON.stringify(data)),
+  saveCart: (data) => localStorage.setItem('BV_CART', JSON.stringify(data)),
 
   getAtelieOrders: () => JSON.parse(localStorage.getItem('BV_ATELIE_ORDERS')) || INITIAL_ATELIE_ORDERS,
   setAtelieOrders: (data) => {
@@ -1259,7 +1260,8 @@ async function processOrderCheckout() {
     localStorage.setItem('BV_LAST_ORDER_ID', data.orderId);
 
     // Limpa a sacola
-    Storage.saveCart([]);
+    cart = [];
+    Storage.setCart([]);
     updateCartBadge();
     renderCart();
 
