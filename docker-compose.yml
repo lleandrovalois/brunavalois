@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: brunavalois
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8088}:80"
+    environment:
+      - PORT=80
+      - TZ=America/Sao_Paulo

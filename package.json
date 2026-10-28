@@ -1,0 +1,17 @@
+{
+  "name": "bruna-valois-joias",
+  "version": "1.0.0",
+  "description": "Bruna Valois Joias e Semijoias - Alta Joalheria & Ateliê Sob Medida",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "joalheria",
+    "ecommerce",
+    "atelie",
+    "bruna-valois"
+  ],
+  "author": "Bruna Valois",
+  "license": "ISC"
+}
