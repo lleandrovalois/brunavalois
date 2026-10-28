@@ -78,19 +78,27 @@ class OrderRepository {
       id: orderId,
       external_reference: data.external_reference || orderId,
       items: data.items || [],
+      subtotal: Number(data.subtotal) || Number(data.total) || 0,
+      discount: Number(data.discount) || 0,
+      shipping_price: Number(data.shipping_price) || 0,
       total: Number(data.total) || 0,
       currency: 'BRL',
       status: data.status || 'pending', // pending, approved, in_process, rejected, cancelled
       status_detail: data.status_detail || 'waiting_payment',
+      shipping_status: data.shipping_status || (data.status === 'approved' ? 'SEPARATING' : 'PENDING_PAYMENT'), // PENDING_PAYMENT, PAID, SEPARATING, SHIPPED, DELIVERED
+      tracking_code: data.tracking_code || null,
       payment_method: data.payment_method || null, // checkout_pro, pix, credit_card
       payment_id: data.payment_id || null,
       preference_id: data.preference_id || null,
-      payer: data.payer || {},
+      customer: data.customer || data.payer || {},
+      payer: data.payer || data.customer || {},
+      shipping: data.shipping || {},
       metadata: data.metadata || {},
       pix: data.pix || null, // { qr_code, qr_code_base64, ticket_url }
       created_at: now,
       updated_at: now
     };
+
 
     this.orders.set(orderId, order);
     this._save();
@@ -189,6 +197,80 @@ class OrderRepository {
   }
 
   /**
+   * Consulta pedidos por ID, e-mail, CPF ou telefone (Lookup de Rastreio)
+   */
+  lookupOrders(rawQuery) {
+    if (!rawQuery) return [];
+    const query = String(rawQuery).trim();
+    const upper = query.toUpperCase();
+    const cleanDigits = query.replace(/\D/g, '');
+    const isEmail = query.includes('@');
+    const lowerEmail = query.toLowerCase();
+
+    const matches = [];
+
+    for (const order of this.orders.values()) {
+      // 1. Busca por ID direto ou External Reference
+      if (order.id.toUpperCase() === upper || (order.external_reference && order.external_reference.toUpperCase() === upper)) {
+        matches.push(order);
+        continue;
+      }
+
+      // Se a query for apenas o número após BV- (ex: digitou 123456)
+      if (order.id.toUpperCase().replace(/\D/g, '').endsWith(cleanDigits) && cleanDigits.length >= 4) {
+        matches.push(order);
+        continue;
+      }
+
+      // 2. Busca por E-mail
+      if (isEmail) {
+        const cEmail = (order.customer?.email || order.payer?.email || '').toLowerCase();
+        if (cEmail === lowerEmail || cEmail.includes(lowerEmail)) {
+          matches.push(order);
+          continue;
+        }
+      }
+
+      // 3. Busca por CPF ou Telefone (apenas números)
+      if (cleanDigits.length >= 7) {
+        const cCpf = (order.customer?.cpf || order.payer?.cpf || '').replace(/\D/g, '');
+        const cPhone = (order.customer?.phone || order.payer?.phone || '').replace(/\D/g, '');
+
+        if (cCpf && (cCpf.includes(cleanDigits) || cleanDigits.includes(cCpf))) {
+          matches.push(order);
+          continue;
+        }
+
+        if (cPhone && (cPhone.includes(cleanDigits) || cleanDigits.includes(cPhone))) {
+          matches.push(order);
+          continue;
+        }
+      }
+    }
+
+    // Ordena do mais recente para o mais antigo
+    matches.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return matches;
+  }
+
+  /**
+   * Atualiza o status de entrega / expedição do pedido
+   */
+  updateShippingStatus(orderId, shippingStatus, trackingCode = null) {
+    const order = this.orders.get(orderId);
+    if (!order) return null;
+
+    order.shipping_status = shippingStatus;
+    if (trackingCode) order.tracking_code = String(trackingCode).trim().toUpperCase();
+    order.updated_at = new Date().toISOString();
+
+    this.orders.set(orderId, order);
+    this._save();
+    console.log(`[OrderRepository] Expedição do pedido ${orderId}: ${shippingStatus} | Rastreio: ${order.tracking_code || 'N/A'}`);
+    return order;
+  }
+
+  /**
    * Retorna os pedidos mais recentes para consulta
    */
   listRecentOrders(limit = 20) {
@@ -197,6 +279,7 @@ class OrderRepository {
     return all.slice(0, limit);
   }
 }
+
 
 // Singleton
 module.exports = new OrderRepository();

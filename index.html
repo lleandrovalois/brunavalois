@@ -53,6 +53,10 @@
         <span id="topAnnouncementText" class="tracking-wide">✨ Frete Grátis com Seguro em compras acima de R$ 450 | Certificado de Garantia Eterna</span>
       </div>
       <div class="flex items-center gap-4 text-[11px] uppercase tracking-wider text-stone-300">
+        <a href="/meus-pedidos" onclick="navigateToTracking(event)" class="hover:text-[#C5A059] transition flex items-center gap-1.5 font-medium text-stone-300">
+          <i class="fas fa-truck text-[#C5A059]"></i> Acompanhar Pedido
+        </a>
+        <span class="text-stone-600">|</span>
         <a id="topWhatsAppLink" href="https://wa.me/5511999999999" target="_blank" class="hover:text-[#C5A059] transition flex items-center gap-1.5">
           <i class="fab fa-whatsapp text-emerald-400"></i> Atendimento VIP
         </a>
@@ -75,7 +79,7 @@
         </button>
 
         <!-- Brand Identity Logo -->
-        <a href="#" class="flex flex-col items-center group text-center">
+        <a href="/" onclick="navigateToHome(event)" class="flex flex-col items-center group text-center cursor-pointer">
           <span class="text-2xl sm:text-3xl font-heading font-bold tracking-widest text-[#FAF9F6] group-hover:text-[#C5A059] transition duration-300">
             BRUNA VALOIS
           </span>
@@ -86,12 +90,15 @@
 
         <!-- Desktop Navigation Links -->
         <nav class="hidden lg:flex items-center gap-8 text-sm font-medium tracking-wide text-stone-200">
-          <a href="#vitrine" class="hover:text-[#C5A059] transition duration-200">Coleções</a>
-          <a href="#atelie" class="hover:text-[#C5A059] transition duration-200 flex items-center gap-1.5">
+          <a href="/" onclick="navigateToHome(event)" class="hover:text-[#C5A059] transition duration-200">Coleções</a>
+          <a href="#atelie" onclick="navigateToHomeSection(event, 'atelie')" class="hover:text-[#C5A059] transition duration-200 flex items-center gap-1.5">
             <i class="fas fa-gem text-xs text-[#C5A059]"></i> Ateliê Sob Medida
           </a>
-          <a href="#sobre" class="hover:text-[#C5A059] transition duration-200">Sobre o Ateliê</a>
-          <a href="#garantia" class="hover:text-[#C5A059] transition duration-200">Certificado & Garantia</a>
+          <a href="#sobre" onclick="navigateToHomeSection(event, 'sobre')" class="hover:text-[#C5A059] transition duration-200">Sobre o Ateliê</a>
+          <a href="#garantia" onclick="navigateToHomeSection(event, 'garantia')" class="hover:text-[#C5A059] transition duration-200">Garantia</a>
+          <a href="/meus-pedidos" onclick="navigateToTracking(event)" class="hover:text-[#C5A059] transition duration-200 flex items-center gap-1.5 text-stone-200 hover:text-[#C5A059]">
+            <i class="fas fa-box text-[#C5A059]"></i> Acompanhar Pedido
+          </a>
         </nav>
 
         <!-- Action Buttons -->
@@ -102,7 +109,7 @@
           </button>
 
           <!-- Search trigger -->
-          <a href="#vitrine" onclick="document.getElementById('searchInput').focus();" class="text-stone-200 hover:text-[#C5A059] transition p-2" title="Buscar no Catálogo">
+          <a href="/" onclick="navigateToHome(event); setTimeout(() => document.getElementById('searchInput')?.focus(), 200);" class="text-stone-200 hover:text-[#C5A059] transition p-2" title="Buscar no Catálogo">
             <i class="fas fa-search text-base"></i>
           </a>
 
@@ -119,10 +126,13 @@
 
     <!-- Mobile Drawer Nav -->
     <div id="mobileMenu" class="hidden lg:hidden bg-[#1C1917] border-b border-[#C5A059]/20 px-6 py-4 space-y-3 text-sm">
-      <a href="#vitrine" class="block text-stone-200 hover:text-[#C5A059] py-1">Coleções & Vitrine</a>
-      <a href="#atelie" class="block text-stone-200 hover:text-[#C5A059] py-1">Ateliê Sob Medida</a>
-      <a href="#sobre" class="block text-stone-200 hover:text-[#C5A059] py-1">Sobre o Ateliê</a>
-      <a href="#garantia" class="block text-stone-200 hover:text-[#C5A059] py-1">Certificado & Garantia Eterna</a>
+      <a href="/" onclick="navigateToHome(event); toggleMobileMenu();" class="block text-stone-200 hover:text-[#C5A059] py-1">Coleções & Vitrine</a>
+      <a href="#atelie" onclick="navigateToHomeSection(event, 'atelie'); toggleMobileMenu();" class="block text-stone-200 hover:text-[#C5A059] py-1">Ateliê Sob Medida</a>
+      <a href="#sobre" onclick="navigateToHomeSection(event, 'sobre'); toggleMobileMenu();" class="block text-stone-200 hover:text-[#C5A059] py-1">Sobre o Ateliê</a>
+      <a href="#garantia" onclick="navigateToHomeSection(event, 'garantia'); toggleMobileMenu();" class="block text-stone-200 hover:text-[#C5A059] py-1">Certificado & Garantia Eterna</a>
+      <a href="/meus-pedidos" onclick="navigateToTracking(event); toggleMobileMenu();" class="block text-[#C5A059] font-medium py-1 flex items-center gap-2">
+        <i class="fas fa-truck"></i> Acompanhar Pedido
+      </a>
       <div class="pt-2 border-t border-stone-800 flex justify-between items-center text-xs text-stone-400">
         <button onclick="requestCmsAccess()" class="text-[#C5A059] flex items-center gap-1.5 font-medium">
           <i class="fas fa-lock"></i> Painel de Controle CMS
@@ -131,8 +141,12 @@
     </div>
   </header>
 
-  <!-- ================= HERO SECTION ================= -->
-  <section class="relative min-h-[85vh] flex items-center justify-center bg-stone-950 overflow-hidden">
+  <main>
+    <!-- ================= CONTEÚDO PRINCIPAL DA VITRINE (HOME) ================= -->
+    <div id="mainStoreContent">
+
+      <!-- ================= HERO SECTION ================= -->
+      <section class="relative min-h-[85vh] flex items-center justify-center bg-stone-950 overflow-hidden">
     <!-- Hero Background Image with Overlay -->
     <div class="absolute inset-0 z-0">
       <img id="heroImage" src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&w=1600&q=85" alt="Alta Joalheria Bruna Valois" class="w-full h-full object-cover object-center opacity-45 scale-105 transition-transform duration-1000 ease-out">
@@ -520,7 +534,665 @@
         </div>
       </div>
     </div>
-  </section>
+    </section>
+    </div> <!-- /#mainStoreContent -->
+
+    <!-- ================= CHECKOUT VIEW (ESTILO JVMODAS) ================= -->
+    <section id="checkoutView" class="hidden min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <!-- Breadcrumb e Stepper -->
+      <div class="mb-8">
+        <div class="flex items-center gap-2 text-xs text-stone-500 mb-4">
+          <a href="/" onclick="navigateToHome(event)" class="hover:text-[#C5A059] transition flex items-center gap-1">
+            <i class="fas fa-home"></i> Início
+          </a>
+          <span>/</span>
+          <button type="button" onclick="openCart()" class="hover:text-[#C5A059] transition">Sacola de Compras</button>
+          <span>/</span>
+          <span class="text-[#C5A059] font-semibold">Checkout Seguro</span>
+        </div>
+
+        <!-- Stepper Visual de 3 Etapas -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 max-w-xl mx-auto text-center pt-2">
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 rounded-full bg-stone-900 border border-[#C5A059] text-[#C5A059] flex items-center justify-center text-xs font-bold shadow-sm">
+              1
+            </div>
+            <span class="text-[11px] font-semibold text-stone-900 uppercase tracking-wider">Identificação</span>
+          </div>
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 rounded-full bg-stone-900 border border-[#C5A059] text-[#C5A059] flex items-center justify-center text-xs font-bold shadow-sm">
+              2
+            </div>
+            <span class="text-[11px] font-semibold text-stone-900 uppercase tracking-wider">Entrega</span>
+          </div>
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 rounded-full bg-[#C5A059] text-stone-950 flex items-center justify-center text-xs font-bold shadow-md">
+              3
+            </div>
+            <span class="text-[11px] font-semibold text-stone-900 uppercase tracking-wider">Pagamento</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout 2 Colunas (Estilo JVMODAS) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Coluna Esquerda: Formulários (7 colunas) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Bloco 1: Dados Pessoais / Identificação -->
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-sm space-y-5">
+            <div class="flex items-center gap-3 pb-3 border-b border-stone-100">
+              <div class="w-9 h-9 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center text-base">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div>
+                <h3 class="font-heading font-bold text-lg text-stone-900">1. Dados do Comprador</h3>
+                <p class="text-xs text-stone-500">Para emissão do certificado de autenticidade vitalícia e nota fiscal.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Nome Completo *</label>
+                <input type="text" id="checkoutName" required placeholder="Ex: Maria Carolina Silveira" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">E-mail para Rastreamento *</label>
+                <input type="email" id="checkoutEmail" required placeholder="seuemail@exemplo.com" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                <span class="text-[11px] text-stone-500 mt-1 block">O código de rastreamento com seguro total será enviado para este e-mail.</span>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">CPF *</label>
+                <input type="text" id="checkoutCpf" required placeholder="000.000.000-00" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">WhatsApp / Celular *</label>
+                <input type="tel" id="checkoutPhone" required placeholder="(11) 99999-9999" maxlength="15" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 2: Endereço de Entrega (ViaCEP Automático) -->
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-sm space-y-5">
+            <div class="flex items-center gap-3 pb-3 border-b border-stone-100">
+              <div class="w-9 h-9 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center text-base">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div>
+                <h3 class="font-heading font-bold text-lg text-stone-900">2. Endereço de Entrega</h3>
+                <p class="text-xs text-stone-500">Envio lacrado em embalagem de alta joalheria com seguro integral.</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Linha CEP com busca automática -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">CEP *</label>
+                  <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" class="text-[11px] text-[#C5A059] hover:underline">
+                    Não sei meu CEP
+                  </a>
+                </div>
+                <div class="flex gap-2 max-w-xs">
+                  <input type="text" id="checkoutCep" required placeholder="00000-000" maxlength="9" class="flex-1 px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                  <button type="button" id="checkoutSearchCepBtn" onclick="handleCepSearch()" class="px-5 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs transition flex items-center gap-1.5">
+                    <i class="fas fa-search"></i> Buscar
+                  </button>
+                </div>
+                <div id="checkoutCepFeedback" class="text-xs mt-1.5 hidden font-medium"></div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Rua / Logradouro *</label>
+                  <input type="text" id="checkoutStreet" required placeholder="Ex: Av. Brigadeiro Faria Lima" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Número *</label>
+                  <input type="text" id="checkoutNumber" required placeholder="1234" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Complemento</label>
+                  <input type="text" id="checkoutComplement" placeholder="Apto 102, Bloco B" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Bairro *</label>
+                  <input type="text" id="checkoutNeighborhood" required placeholder="Jardins" class="w-full px-4 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                </div>
+                <div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Cidade *</label>
+                      <input type="text" id="checkoutCity" required placeholder="São Paulo" class="w-full px-3 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] transition">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">UF *</label>
+                      <input type="text" id="checkoutState" required placeholder="SP" maxlength="2" class="w-full px-3 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm uppercase text-center focus:outline-none focus:border-[#C5A059] transition">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 3: Opções de Envio com Seguro -->
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-sm space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-stone-100">
+              <div class="w-9 h-9 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center text-base">
+                <i class="fas fa-truck"></i>
+              </div>
+              <div>
+                <h3 class="font-heading font-bold text-lg text-stone-900">3. Opções de Envio</h3>
+                <p class="text-xs text-stone-500">Selecione o método de transporte com seguro e rastreio.</p>
+              </div>
+            </div>
+
+            <div class="space-y-3" id="shippingOptionsContainer">
+              <!-- Opção PAC -->
+              <label id="shippingCardPAC" class="shipping-card-option flex items-center justify-between p-4 rounded-2xl border-2 border-[#C5A059] bg-amber-50/20 cursor-pointer transition" onclick="selectShippingMethod('PAC')">
+                <div class="flex items-center gap-3.5">
+                  <input type="radio" id="shippingRadioPAC" name="checkoutShippingRadio" value="PAC" checked class="w-4 h-4 text-[#C5A059] focus:ring-[#C5A059]">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-sm text-stone-900">PAC - Envio Seguro Padrão</span>
+                      <span id="checkoutPacBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Grátis</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Prazo estimado: 5 a 8 dias úteis após a expedição</p>
+                  </div>
+                </div>
+                <span id="checkoutPacPrice" class="font-bold text-sm text-stone-900">Grátis</span>
+              </label>
+
+              <!-- Opção Sedex -->
+              <label id="shippingCardSEDEX" class="shipping-card-option flex items-center justify-between p-4 rounded-2xl border-2 border-stone-200 hover:border-[#C5A059] cursor-pointer transition bg-white" onclick="selectShippingMethod('SEDEX')">
+                <div class="flex items-center gap-3.5">
+                  <input type="radio" id="shippingRadioSEDEX" name="checkoutShippingRadio" value="SEDEX" class="w-4 h-4 text-[#C5A059] focus:ring-[#C5A059]">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-sm text-stone-900">SEDEX - Expresso Luxo com Seguro</span>
+                      <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Mais Rápido</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Prazo estimado: 1 a 3 dias úteis após a expedição</p>
+                  </div>
+                </div>
+                <span class="font-bold text-sm text-stone-900">R$ 34,90</span>
+              </label>
+
+              <!-- Opção Retirada -->
+              <label id="shippingCardRETIRADA" class="shipping-card-option flex items-center justify-between p-4 rounded-2xl border-2 border-stone-200 hover:border-[#C5A059] cursor-pointer transition bg-white" onclick="selectShippingMethod('RETIRADA')">
+                <div class="flex items-center gap-3.5">
+                  <input type="radio" id="shippingRadioRETIRADA" name="checkoutShippingRadio" value="RETIRADA" class="w-4 h-4 text-[#C5A059] focus:ring-[#C5A059]">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-sm text-stone-900">Retirada no Ateliê Bruna Valois</span>
+                      <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">VIP</span>
+                    </div>
+                    <p class="text-xs text-stone-500">Agendamento exclusivo com champagne e curadora</p>
+                  </div>
+                </div>
+                <span class="font-bold text-sm text-stone-900">Grátis</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Bloco 4: Forma de Pagamento (Mercado Pago ou Pix) -->
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-sm space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-stone-100">
+              <div class="w-9 h-9 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center text-base">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div>
+                <h3 class="font-heading font-bold text-lg text-stone-900">4. Forma de Pagamento</h3>
+                <p class="text-xs text-stone-500">Processado com criptografia oficial pelo Mercado Pago.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <!-- Cartão Mercado Pago -->
+              <div id="paymentOptionMp" onclick="selectPaymentMethod('checkout_pro')" class="p-5 rounded-2xl border-2 border-[#C5A059] bg-amber-50/30 cursor-pointer transition flex flex-col justify-between space-y-3">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="payRadioMp" name="paymentOptionRadio" value="checkout_pro" checked class="w-4 h-4 text-[#C5A059]">
+                    <span class="font-bold text-sm text-stone-900">Mercado Pago</span>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-100 text-[#009EE3]">
+                    Checkout Pro
+                  </span>
+                </div>
+                <p class="text-xs text-stone-600">Cartão de Crédito em até 10x sem juros, Boleto ou Saldo Mercado Pago com total proteção ao comprador.</p>
+                <div class="flex items-center gap-2 text-stone-400 text-base pt-1">
+                  <i class="fab fa-cc-visa text-blue-800"></i>
+                  <i class="fab fa-cc-mastercard text-amber-600"></i>
+                  <i class="fab fa-cc-amex text-blue-500"></i>
+                  <i class="fas fa-barcode text-stone-600"></i>
+                </div>
+              </div>
+
+              <!-- Pix Instantâneo -->
+              <div id="paymentOptionPix" onclick="selectPaymentMethod('pix')" class="p-5 rounded-2xl border-2 border-stone-200 hover:border-emerald-500 cursor-pointer transition flex flex-col justify-between space-y-3">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-2">
+                    <input type="radio" id="payRadioPix" name="paymentOptionRadio" value="pix" class="w-4 h-4 text-emerald-600">
+                    <span class="font-bold text-sm text-stone-900">PIX Instantâneo</span>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    5% OFF
+                  </span>
+                </div>
+                <p class="text-xs text-stone-600">Aprovação imediata em segundos por QR Code ou Copia e Cola com 5% de desconto especial na joia.</p>
+                <div class="flex items-center gap-2 text-emerald-600 text-base pt-1">
+                  <i class="fab fa-pix"></i>
+                  <span class="text-xs font-semibold">Liberação imediata para confecção</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Coluna Direita: Resumo do Pedido & Totalizador Fixo (5 colunas) -->
+        <div class="lg:col-span-5 sticky top-28 space-y-5">
+          
+          <div class="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 shadow-lg space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-stone-100">
+              <h3 class="font-heading font-bold text-xl text-stone-900">Resumo da Compra</h3>
+              <span id="checkoutSummaryItemCount" class="text-xs text-[#C5A059] font-bold uppercase tracking-wider">0 Itens</span>
+            </div>
+
+            <!-- Lista de Itens do Checkout -->
+            <div id="checkoutSummaryItemsList" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+              <!-- Inserido dinamicamente via app.js -->
+            </div>
+
+            <!-- Cupom de Desconto -->
+            <div class="pt-2 border-t border-stone-100">
+              <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Cupom de Desconto</label>
+              <div class="flex gap-2">
+                <input type="text" id="checkoutCouponInput" placeholder="Ex: BRUNA10" class="flex-1 px-3 py-2.5 rounded-xl border border-stone-300 text-xs uppercase focus:outline-none focus:border-[#C5A059]">
+                <button type="button" id="checkoutApplyCouponBtn" onclick="handleCheckoutApplyCoupon()" class="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition">
+                  Aplicar
+                </button>
+              </div>
+              <div id="checkoutCouponFeedback" class="hidden text-xs mt-1.5 font-medium flex items-center gap-1"></div>
+            </div>
+
+            <!-- Totais -->
+            <div class="space-y-2.5 text-xs text-stone-600 pt-3 border-t border-stone-100">
+              <div class="flex justify-between">
+                <span>Subtotal dos Produtos:</span>
+                <span id="checkoutSubtotal" class="font-semibold text-stone-900">R$ 0,00</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Frete com Seguro Total:</span>
+                <span id="checkoutShippingPrice" class="font-semibold text-stone-900">Grátis</span>
+              </div>
+              <div id="checkoutCouponRow" class="hidden flex justify-between text-emerald-600 font-medium">
+                <span>Desconto de Cupom:</span>
+                <span id="checkoutCouponDiscount">- R$ 0,00</span>
+              </div>
+              <div id="checkoutPixDiscountRow" class="hidden flex justify-between text-emerald-600 font-medium">
+                <span>Desconto Especial PIX (5%):</span>
+                <span id="checkoutPixDiscount">- R$ 0,00</span>
+              </div>
+
+              <!-- Total Final -->
+              <div class="pt-3 border-t border-stone-200 flex justify-between items-baseline">
+                <span class="font-bold text-stone-900 text-base">Total a Pagar:</span>
+                <div class="text-right">
+                  <span id="checkoutFinalTotal" class="font-heading font-bold text-2xl text-stone-900">R$ 0,00</span>
+                  <p id="checkoutInstallmentsInfo" class="text-[11px] text-stone-500 font-medium mt-0.5">
+                    ou em até 10x sem juros no Mercado Pago
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botão de Confirmação Final -->
+            <button type="button" id="checkoutSubmitBtn" onclick="processOrderCheckout()" class="w-full py-4 rounded-2xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-sm shadow-xl hover-glow transition transform active:scale-95 flex items-center justify-center gap-2 group">
+              <i class="fas fa-lock"></i>
+              <span id="checkoutSubmitBtnText">Pagar com Mercado Pago</span>
+            </button>
+
+            <!-- Selos de Segurança -->
+            <div class="p-3 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2 text-[11px] text-stone-500">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-emerald-600 text-sm"></i>
+                <span>Criptografia SSL de 256 bits protegida pelo Mercado Pago</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fas fa-gem text-[#C5A059] text-sm"></i>
+                <span>Garantia Vitalícia do Ouro 18k e autenticidade das pedras</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fas fa-box text-blue-600 text-sm"></i>
+                <span>Envio com seguro total contra extravio ou avarias</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= ACOMPANHAR PEDIDO VIEW (ESTILO JVMODAS) ================= -->
+    <section id="orderTrackingView" class="hidden min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs text-stone-500 mb-6">
+        <a href="/" onclick="navigateToHome(event)" class="hover:text-[#C5A059] transition flex items-center gap-1">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <span>/</span>
+        <span class="text-[#C5A059] font-semibold">Acompanhar Pedido</span>
+      </div>
+
+      <!-- Hero / Caixa de Busca de Pedido -->
+      <div class="bg-[#1C1917] text-[#FAF9F6] rounded-3xl p-8 sm:p-10 border border-[#C5A059]/30 shadow-2xl mb-8 relative overflow-hidden">
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,#C5A059_0,transparent_70%)] pointer-events-none"></div>
+        
+        <div class="max-w-2xl relative z-10">
+          <span class="text-xs uppercase tracking-[0.25em] text-[#C5A059] font-bold block mb-2">Central de Rastreio & Expedição</span>
+          <h2 class="text-3xl sm:text-4xl font-heading font-bold mb-3 text-white">Acompanhe seu Pedido</h2>
+          <p class="text-sm text-stone-300 font-light leading-relaxed mb-6">
+            Consulte o andamento da confecção, confirmação de pagamento e envio seguro com código dos Correios.
+          </p>
+
+          <!-- Search Bar Form -->
+          <form id="trackingLookupForm" onsubmit="handleTrackingSearch(event)" class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"></i>
+              <input 
+                type="text" 
+                id="trackingQueryInput" 
+                required
+                placeholder="Digite o número do pedido (ex: BV-123456), e-mail ou CPF..." 
+                class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-stone-900 border border-[#C5A059]/40 text-white placeholder-stone-400 text-sm focus:outline-none focus:border-[#C5A059] transition"
+              >
+            </div>
+            <button type="submit" id="trackingSearchBtn" class="px-8 py-3.5 rounded-2xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-lg hover-glow transition flex items-center justify-center gap-2">
+              <i class="fas fa-truck"></i> Rastrear
+            </button>
+          </form>
+
+          <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1.5">
+            <i class="fas fa-info-circle text-[#C5A059]"></i>
+            <span>Dica: você pode buscar pelo seu e-mail cadastrado na compra para listar todos os seus pedidos.</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Estado de Loading da Busca -->
+      <div id="trackingLoadingState" class="hidden text-center py-16 space-y-3">
+        <i class="fas fa-circle-notch fa-spin text-3xl text-[#C5A059]"></i>
+        <p class="text-xs text-stone-600 uppercase tracking-widest font-semibold">Consultando central de pedidos...</p>
+      </div>
+
+      <!-- Estado de Pedido Não Encontrado -->
+      <div id="trackingNotFoundState" class="hidden bg-white rounded-3xl p-10 border border-stone-200 text-center space-y-4 shadow-sm">
+        <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto text-2xl">
+          <i class="fas fa-search-minus"></i>
+        </div>
+        <h3 class="text-xl font-heading font-bold text-stone-900">Nenhum Pedido Encontrado</h3>
+        <p class="text-stone-500 text-xs sm:text-sm max-w-md mx-auto leading-relaxed" id="trackingNotFoundMsg">
+          Não localizamos pedidos com os dados digitados. Verifique se digitou o número do pedido com 'BV-', seu e-mail ou CPF corretamente.
+        </p>
+        <div class="pt-2">
+          <a id="trackingNotFoundWhatsappBtn" href="https://wa.me/5511999999999" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition">
+            <i class="fab fa-whatsapp"></i> Falar com Suporte VIP no WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Lista de Múltiplos Pedidos (quando busca por e-mail ou CPF) -->
+      <div id="trackingMultipleOrdersView" class="hidden space-y-4 mb-8">
+        <h3 class="font-heading font-bold text-xl text-stone-900 mb-2">Pedidos Encontrados</h3>
+        <div id="trackingOrdersCardsList" class="space-y-4">
+          <!-- Inserido dinamicamente via app.js -->
+        </div>
+      </div>
+
+      <!-- Detalhe do Pedido Selecionado -->
+      <div id="trackingOrderDetailView" class="hidden space-y-6">
+        
+        <!-- Card Superior: Header do Pedido & Status Geral -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-stone-100">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs uppercase tracking-widest text-[#C5A059] font-bold">Pedido Confirmado</span>
+                <span id="detailOrderDate" class="text-xs text-stone-500">• 28/10/2026 às 12:00</span>
+              </div>
+              <h2 id="detailOrderId" class="text-2xl sm:text-3xl font-heading font-bold text-stone-900 mt-1">#BV-000000</h2>
+            </div>
+
+            <!-- Status Badge -->
+            <div id="detailStatusBadgeContainer">
+              <!-- Inserido dinamicamente -->
+            </div>
+          </div>
+
+          <!-- ================= ESTEIRA VISUAL DE 5 PASSOS (TIMELINE) ================= -->
+          <div class="py-4">
+            <span class="text-xs uppercase tracking-widest text-stone-400 font-bold block mb-6 text-center sm:text-left">
+              Esteira de Confecção & Rastreio
+            </span>
+
+            <div class="relative">
+              <!-- Linha de Fundo -->
+              <div class="hidden sm:block absolute top-5 left-8 right-8 h-1 bg-stone-200 z-0"></div>
+              <!-- Linha de Progresso Ativa -->
+              <div id="timelineProgressBar" class="hidden sm:block absolute top-5 left-8 h-1 bg-[#C5A059] z-0 transition-all duration-700" style="width: 25%;"></div>
+
+              <!-- 5 Passos -->
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-2 relative z-10">
+                
+                <!-- Passo 1: Pedido Realizado -->
+                <div id="stepNode1" class="flex sm:flex-col items-center gap-3 sm:text-center">
+                  <div id="stepCircle1" class="w-10 h-10 rounded-full bg-[#C5A059] text-stone-950 flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-stone-900 block">Pedido Realizado</span>
+                    <span id="stepTime1" class="text-[10px] text-stone-500 block">Concluído</span>
+                  </div>
+                </div>
+
+                <!-- Passo 2: Pagamento Confirmado -->
+                <div id="stepNode2" class="flex sm:flex-col items-center gap-3 sm:text-center">
+                  <div id="stepCircle2" class="w-10 h-10 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                    <i class="fas fa-credit-card"></i>
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-stone-900 block">Pagamento</span>
+                    <span id="stepTime2" class="text-[10px] text-stone-500 block">Aguardando</span>
+                  </div>
+                </div>
+
+                <!-- Passo 3: Em Confecção / Separação -->
+                <div id="stepNode3" class="flex sm:flex-col items-center gap-3 sm:text-center">
+                  <div id="stepCircle3" class="w-10 h-10 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                    <i class="fas fa-gem"></i>
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-stone-900 block">No Ateliê</span>
+                    <span id="stepTime3" class="text-[10px] text-stone-500 block">Confecção & Embalagem</span>
+                  </div>
+                </div>
+
+                <!-- Passo 4: Despachado com Seguro -->
+                <div id="stepNode4" class="flex sm:flex-col items-center gap-3 sm:text-center">
+                  <div id="stepCircle4" class="w-10 h-10 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                    <i class="fas fa-truck"></i>
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-stone-900 block">Em Transporte</span>
+                    <span id="stepTime4" class="text-[10px] text-stone-500 block">Com Seguro Total</span>
+                  </div>
+                </div>
+
+                <!-- Passo 5: Entregue -->
+                <div id="stepNode5" class="flex sm:flex-col items-center gap-3 sm:text-center">
+                  <div id="stepCircle5" class="w-10 h-10 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                    <i class="fas fa-box-open"></i>
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-stone-900 block">Entregue</span>
+                    <span id="stepTime5" class="text-[10px] text-stone-500 block">Destino Final</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Se o pagamento for Pix e estiver pendente: Bloco do QR Code e Polling -->
+          <div id="detailPendingPixBlock" class="hidden bg-emerald-50/70 border-2 border-emerald-300 rounded-3xl p-6 sm:p-7 space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shadow-sm">
+                <i class="fab fa-pix"></i>
+              </div>
+              <div>
+                <h4 class="font-heading font-bold text-lg text-emerald-950">Aguardando Pagamento do Pix</h4>
+                <p class="text-xs text-emerald-800">Pague pelo app do seu banco com o QR Code ou código copia e cola abaixo.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
+              <div class="md:col-span-4 flex flex-col items-center justify-center bg-white p-4 rounded-2xl border border-emerald-200 shadow-sm">
+                <img id="detailPixQrImage" src="" alt="QR Code Pix" class="w-40 h-40 object-contain">
+                <span class="text-[11px] text-stone-500 mt-2 flex items-center gap-1">
+                  <i class="fas fa-clock text-amber-500"></i> Expira em 15 minutos
+                </span>
+              </div>
+
+              <div class="md:col-span-8 space-y-3">
+                <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Código Pix Copia e Cola:</label>
+                <div class="flex gap-2">
+                  <input type="text" id="detailPixCopyInput" readonly class="flex-1 px-3 py-2.5 rounded-xl border border-stone-300 bg-white text-xs font-mono select-all">
+                  <button type="button" onclick="copyDetailPixCode()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center gap-1.5 active:scale-95">
+                    <i class="fas fa-copy"></i> Copiar
+                  </button>
+                </div>
+
+                <div class="rounded-xl p-3 bg-white border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="font-medium text-[11px]">Verificando pagamento em tempo real a cada 3 segundos...</span>
+                  </div>
+                </div>
+
+                <!-- Simular aprovação se sandbox -->
+                <div id="detailSandboxSimulateBox" class="hidden pt-1">
+                  <button type="button" onclick="simulateDetailPixApproval()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider transition">
+                    <i class="fas fa-flask mr-1"></i> Simular Pagamento Aprovado (Sandbox)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Se houver código de rastreamento dos Correios -->
+          <div id="detailTrackingCodeBlock" class="hidden bg-stone-900 text-white rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-stone-800 border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059]">
+                <i class="fas fa-truck-moving text-lg"></i>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-[#C5A059] font-bold block">Código de Rastreamento Correios</span>
+                <span id="detailTrackingCodeValue" class="text-base font-mono font-bold text-white tracking-widest">BR123456789BR</span>
+              </div>
+            </div>
+            <a id="detailCorreiosLink" href="https://rastreamento.correios.com.br/app/index.php" target="_blank" class="px-5 py-2.5 rounded-xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-md hover-glow transition flex items-center gap-2">
+              <i class="fas fa-external-link-alt"></i> Rastrear nos Correios
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Grid Detalhes: Produtos + Endereço e Totais -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Produtos do Pedido (7 cols) -->
+          <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-stone-200 shadow-sm space-y-4">
+            <h3 class="font-heading font-bold text-lg text-stone-900 pb-3 border-b border-stone-100 flex items-center justify-between">
+              <span>Joias do Pedido</span>
+              <span id="detailItemsCount" class="text-xs text-stone-400 font-normal">0 itens</span>
+            </h3>
+            <div id="detailItemsList" class="space-y-3">
+              <!-- Inserido dinamicamente via app.js -->
+            </div>
+          </div>
+
+          <!-- Destinatário e Financeiro (5 cols) -->
+          <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Endereço -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-3">
+              <h4 class="font-heading font-bold text-base text-stone-900 flex items-center gap-2">
+                <i class="fas fa-map-marker-alt text-[#C5A059]"></i> Destino da Entrega
+              </h4>
+              <div class="text-xs text-stone-600 space-y-1">
+                <p id="detailCustomerName" class="font-bold text-stone-900"></p>
+                <p id="detailAddressStreet"></p>
+                <p id="detailAddressCity"></p>
+                <p id="detailAddressCep" class="text-stone-400"></p>
+                <div class="pt-2 border-t border-stone-100 flex justify-between text-[11px]">
+                  <span class="text-stone-500">Envio:</span>
+                  <span id="detailShippingMethod" class="font-semibold text-stone-800"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Totais -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-3">
+              <h4 class="font-heading font-bold text-base text-stone-900">Resumo Financeiro</h4>
+              <div class="space-y-1.5 text-xs text-stone-600">
+                <div class="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span id="detailSubtotal" class="font-semibold text-stone-800">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Frete com Seguro:</span>
+                  <span id="detailShippingPrice" class="font-semibold text-stone-800">Grátis</span>
+                </div>
+                <div id="detailDiscountRow" class="hidden flex justify-between text-emerald-600">
+                  <span>Desconto:</span>
+                  <span id="detailDiscount">- R$ 0,00</span>
+                </div>
+                <div class="pt-2 border-t border-stone-200 flex justify-between text-base font-bold text-stone-900">
+                  <span>Total:</span>
+                  <span id="detailTotal" class="font-heading">R$ 0,00</span>
+                </div>
+              </div>
+
+              <!-- Botão WhatsApp Suporte VIP -->
+              <div class="pt-3">
+                <a id="detailWhatsappSupportBtn" href="#" target="_blank" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2">
+                  <i class="fab fa-whatsapp text-base"></i> Falar com Ateliê sobre o Pedido
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
 
   <!-- ================= FOOTER ================= -->
   <footer class="bg-stone-950 text-stone-400 text-xs py-16 border-t border-[#C5A059]/20">
@@ -543,10 +1215,11 @@
       <div class="space-y-3">
         <h5 class="text-white font-semibold uppercase tracking-wider text-xs">Navegação Rápida</h5>
         <ul class="space-y-2">
-          <li><a href="#vitrine" class="hover:text-[#C5A059] transition">Catálogo Completo</a></li>
-          <li><a href="#atelie" class="hover:text-[#C5A059] transition">Ateliê Sob Medida</a></li>
-          <li><a href="#sobre" class="hover:text-[#C5A059] transition">Nossa História</a></li>
-          <li><a href="#garantia" class="hover:text-[#C5A059] transition">Certificados & Cuidados</a></li>
+          <li><a href="/" onclick="navigateToHome(event)" class="hover:text-[#C5A059] transition">Catálogo Completo</a></li>
+          <li><a href="#atelie" onclick="navigateToHomeSection(event, 'atelie')" class="hover:text-[#C5A059] transition">Ateliê Sob Medida</a></li>
+          <li><a href="/meus-pedidos" onclick="navigateToTracking(event)" class="hover:text-[#C5A059] transition flex items-center gap-1.5"><i class="fas fa-truck text-[#C5A059]"></i> Acompanhar Pedido</a></li>
+          <li><a href="#sobre" onclick="navigateToHomeSection(event, 'sobre')" class="hover:text-[#C5A059] transition">Nossa História</a></li>
+          <li><a href="#garantia" onclick="navigateToHomeSection(event, 'garantia')" class="hover:text-[#C5A059] transition">Certificados & Cuidados</a></li>
         </ul>
       </div>
 
@@ -674,18 +1347,11 @@
           </span>
         </div>
 
-        <!-- Opções de Pagamento Mercado Pago -->
+        <!-- Botão Finalizar Compra (Modelo JVMODAS) -->
         <div class="space-y-2 pt-1">
-          <!-- Botão 1: Checkout Pro -->
-          <button id="checkoutBtn" class="w-full py-3.5 rounded-2xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg hover:shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2.5 group">
-            <i class="fas fa-shield-alt text-base group-hover:scale-110 transition-transform"></i>
-            <span>Pagar com Mercado Pago (Checkout Pro)</span>
-          </button>
-
-          <!-- Botão 2: Pix Transparente Instantâneo -->
-          <button id="pixCheckoutBtn" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-xs sm:text-sm shadow-md hover:shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 group">
-            <i class="fab fa-pix text-base group-hover:scale-110 transition-transform"></i>
-            <span>Pagar com Pix Instantâneo (QR Code)</span>
+          <button id="cartProceedToCheckoutBtn" onclick="navigateToCheckout()" class="w-full py-4 rounded-2xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg hover:shadow-xl hover-glow transition transform active:scale-95 flex items-center justify-center gap-2 group">
+            <i class="fas fa-lock text-sm group-hover:scale-110 transition-transform"></i>
+            <span>Finalizar Compra</span>
           </button>
         </div>
 

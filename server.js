@@ -56,19 +56,32 @@ app.get('/checkout/success', (req, res) => {
   const orderId = req.query.order_id || req.query.external_reference || '';
   const paymentId = req.query.payment_id || req.query.collection_id || '';
   const status = req.query.status || req.query.collection_status || 'approved';
-  res.redirect(`/?status=${encodeURIComponent(status)}&order_id=${encodeURIComponent(orderId)}&payment_id=${encodeURIComponent(paymentId)}`);
+  if (orderId) {
+    res.redirect(`/pedido/${encodeURIComponent(orderId)}?status=${encodeURIComponent(status)}&payment_id=${encodeURIComponent(paymentId)}`);
+  } else {
+    res.redirect(`/?status=${encodeURIComponent(status)}&payment_id=${encodeURIComponent(paymentId)}`);
+  }
 });
 
 app.get('/checkout/failure', (req, res) => {
   const orderId = req.query.order_id || req.query.external_reference || '';
-  res.redirect(`/?status=failure&order_id=${encodeURIComponent(orderId)}`);
+  res.redirect(`/checkout?order_id=${encodeURIComponent(orderId)}&status=failure`);
 });
 
 app.get('/checkout/pending', (req, res) => {
   const orderId = req.query.order_id || req.query.external_reference || '';
   const paymentId = req.query.payment_id || '';
-  res.redirect(`/?status=pending&order_id=${encodeURIComponent(orderId)}&payment_id=${encodeURIComponent(paymentId)}`);
+  if (orderId) {
+    res.redirect(`/pedido/${encodeURIComponent(orderId)}?status=pending&payment_id=${encodeURIComponent(paymentId)}`);
+  } else {
+    res.redirect(`/?status=pending&payment_id=${encodeURIComponent(paymentId)}`);
+  }
 });
+
+app.get(['/checkout', '/meus-pedidos', '/rastreio', '/pedido/:id', '/order-confirmed/:id'], (req, res) => {
+  res.sendFile(path.join(BASE_DIR, 'index.html'));
+});
+
 
 // ================= ARQUIVOS ESTÁTICOS & SPA =================
 // Serve arquivos estáticos da raiz com controle de cache
