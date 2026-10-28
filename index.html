@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bruna Valois | Alta Joalheria & Semijoias Finas Autorais</title>
+  <meta name="description" content="Alta joalheria e semijoias exclusivas em Ouro 18k, diamantes e gemas naturais. Ateliê sob medida e peças de alta fusão com garantia eterna.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandGold: '#C5A059',
+            brandGoldHover: '#D8B36E',
+            brandDark: '#1C1917',
+            brandAlabaster: '#FAF9F6',
+            brandRose: '#C07A76',
+            brandEmerald: '#062C22',
+            brandChampagne: '#E5C158'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome 6.5.1 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased selection:bg-[#C5A059] selection:text-white">
+
+  <!-- ================= TOP ANNOUNCEMENT BAR ================= -->
+  <div id="topBar" class="bg-[#1C1917] text-[#FAF9F6] text-xs py-2 px-4 transition-colors duration-300 border-b border-[#C5A059]/20">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-2 text-center sm:text-left">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#C5A059] animate-pulse"></span>
+        <span id="topAnnouncementText" class="tracking-wide">✨ Frete Grátis com Seguro em compras acima de R$ 450 | Certificado de Garantia Eterna</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] uppercase tracking-wider text-stone-300">
+        <a id="topWhatsAppLink" href="https://wa.me/5511999999999" target="_blank" class="hover:text-[#C5A059] transition flex items-center gap-1.5">
+          <i class="fab fa-whatsapp text-emerald-400"></i> Atendimento VIP
+        </a>
+        <span class="text-stone-600">|</span>
+        <button id="adminTriggerBtn" onclick="requestCmsAccess()" class="hover:text-[#C5A059] transition flex items-center gap-1.5 text-stone-300 font-medium">
+          <i class="fas fa-lock text-[#C5A059]"></i> Painel CMS
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Mobile Menu Trigger -->
+        <button id="mobileMenuBtn" class="lg:hidden text-[#FAF9F6] p-2 hover:text-[#C5A059] transition">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+
+        <!-- Brand Identity Logo -->
+        <a href="#" class="flex flex-col items-center group text-center">
+          <span class="text-2xl sm:text-3xl font-heading font-bold tracking-widest text-[#FAF9F6] group-hover:text-[#C5A059] transition duration-300">
+            BRUNA VALOIS
+          </span>
+          <span class="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-[#C5A059] font-medium -mt-1">
+            Alta Joalheria & Ateliê
+          </span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-8 text-sm font-medium tracking-wide text-stone-200">
+          <a href="#vitrine" class="hover:text-[#C5A059] transition duration-200">Coleções</a>
+          <a href="#atelie" class="hover:text-[#C5A059] transition duration-200 flex items-center gap-1.5">
+            <i class="fas fa-gem text-xs text-[#C5A059]"></i> Ateliê Sob Medida
+          </a>
+          <a href="#sobre" class="hover:text-[#C5A059] transition duration-200">Sobre o Ateliê</a>
+          <a href="#garantia" class="hover:text-[#C5A059] transition duration-200">Certificado & Garantia</a>
+        </nav>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <!-- CMS Quick Button -->
+          <button onclick="requestCmsAccess()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#C5A059]/40 bg-stone-900/60 hover:bg-stone-800 text-[#C5A059] text-xs font-medium transition hover-glow" title="Gerenciar Loja e Painel CMS">
+            <i class="fas fa-sliders-h text-xs"></i> <span>CMS</span>
+          </button>
+
+          <!-- Search trigger -->
+          <a href="#vitrine" onclick="document.getElementById('searchInput').focus();" class="text-stone-200 hover:text-[#C5A059] transition p-2" title="Buscar no Catálogo">
+            <i class="fas fa-search text-base"></i>
+          </a>
+
+          <!-- Shopping Bag Trigger -->
+          <button id="cartOpenBtn" class="relative bg-stone-900/80 hover:bg-stone-800 text-stone-200 hover:text-[#C5A059] p-3 rounded-full border border-[#C5A059]/40 transition shadow-sm hover-glow flex items-center justify-center">
+            <i class="fas fa-shopping-bag text-base"></i>
+            <span id="cartBadge" class="absolute -top-1 -right-1 bg-[#C5A059] text-stone-950 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-stone-900 scale-100 transition-transform">
+              0
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Nav -->
+    <div id="mobileMenu" class="hidden lg:hidden bg-[#1C1917] border-b border-[#C5A059]/20 px-6 py-4 space-y-3 text-sm">
+      <a href="#vitrine" class="block text-stone-200 hover:text-[#C5A059] py-1">Coleções & Vitrine</a>
+      <a href="#atelie" class="block text-stone-200 hover:text-[#C5A059] py-1">Ateliê Sob Medida</a>
+      <a href="#sobre" class="block text-stone-200 hover:text-[#C5A059] py-1">Sobre o Ateliê</a>
+      <a href="#garantia" class="block text-stone-200 hover:text-[#C5A059] py-1">Certificado & Garantia Eterna</a>
+      <div class="pt-2 border-t border-stone-800 flex justify-between items-center text-xs text-stone-400">
+        <button onclick="requestCmsAccess()" class="text-[#C5A059] flex items-center gap-1.5 font-medium">
+          <i class="fas fa-lock"></i> Painel de Controle CMS
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative min-h-[85vh] flex items-center justify-center bg-stone-950 overflow-hidden">
+    <!-- Hero Background Image with Overlay -->
+    <div class="absolute inset-0 z-0">
+      <img id="heroImage" src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&w=1600&q=85" alt="Alta Joalheria Bruna Valois" class="w-full h-full object-cover object-center opacity-45 scale-105 transition-transform duration-1000 ease-out">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#1C1917] via-stone-950/60 to-[#1C1917]/90"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(197,160,89,0.15)_0,transparent_70%)]"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 text-center text-[#FAF9F6]">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#C5A059]/40 bg-stone-900/60 backdrop-blur-md mb-6">
+        <i class="fas fa-sparkles text-xs text-[#C5A059]"></i>
+        <span class="text-xs uppercase tracking-[0.25em] text-[#C5A059] font-medium">Haute Joaillerie & Custom Atelier</span>
+      </div>
+
+      <h1 id="heroTitle" class="text-4xl sm:text-6xl md:text-7xl font-heading font-semibold tracking-tight leading-[1.1] mb-6">
+        O Brilho da Perfeição em Cada Detalhe
+      </h1>
+
+      <p id="heroSubtitle" class="max-w-2xl mx-auto text-base sm:text-lg text-stone-300 font-light leading-relaxed mb-10">
+        Criações autorais em Ouro 18k, diamantes e gemas raras forjadas para eternizar os momentos mais sublimes da sua vida.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#vitrine" class="w-full sm:w-auto px-8 py-4 rounded-full bg-gold-gradient text-stone-950 font-semibold text-sm uppercase tracking-wider hover:opacity-95 transition shadow-lg hover-glow transform active:scale-95">
+          Explorar Coleção
+        </a>
+        <a href="#atelie" class="w-full sm:w-auto px-8 py-4 rounded-full bg-stone-900/80 hover:bg-stone-800 text-stone-200 border border-[#C5A059]/50 font-semibold text-sm uppercase tracking-wider backdrop-blur-md transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i class="fas fa-pencil-ruler text-xs text-[#C5A059]"></i> Encomendar Joia Exclusiva
+        </a>
+      </div>
+    </div>
+
+    <!-- Trust Badges Bar -->
+    <div class="absolute bottom-0 inset-x-0 bg-stone-950/80 backdrop-blur-md border-t border-[#C5A059]/20 py-4 px-4 hidden md:block">
+      <div class="max-w-7xl mx-auto grid grid-cols-4 gap-4 text-center text-xs tracking-wider uppercase text-stone-300">
+        <div class="flex items-center justify-center gap-2.5">
+          <i class="fas fa-gem text-[#C5A059] text-base"></i>
+          <span>Ouro 18k & Pedras Genuínas</span>
+        </div>
+        <div class="flex items-center justify-center gap-2.5">
+          <i class="fas fa-award text-[#C5A059] text-base"></i>
+          <span>Certificado & Garantia Vitalícia</span>
+        </div>
+        <div class="flex items-center justify-center gap-2.5">
+          <i class="fas fa-shield-alt text-[#C5A059] text-base"></i>
+          <span>Envio com Seguro Total</span>
+        </div>
+        <div class="flex items-center justify-center gap-2.5">
+          <i class="fas fa-credit-card text-[#C5A059] text-base"></i>
+          <span id="trustInstallmentText">Até 10x Sem Juros no Mercado Pago</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VITRINE & CATÁLOGO DINÂMICO ================= -->
+  <section id="vitrine" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <!-- Header da Vitrine -->
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="text-xs uppercase tracking-[0.3em] text-[#C5A059] font-semibold block mb-2">Curadoria Exclusiva</span>
+      <h2 class="text-3xl sm:text-4xl font-heading font-bold text-stone-900 mb-4">Joias & Semijoias Finas</h2>
+      <div class="w-16 h-0.5 bg-[#C5A059] mx-auto mb-4"></div>
+      <p class="text-stone-600 text-sm sm:text-base font-light">
+        Cada peça é concebida com acabamento refinado de alta joalheria e materiais nobres selecionados minuciosamente.
+      </p>
+    </div>
+
+    <!-- Barra de Filtros e Busca Instantânea -->
+    <div class="bg-white/80 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-stone-200/80 shadow-sm mb-10 space-y-4">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Campo de Busca Instantânea -->
+        <div class="relative w-full md:w-80">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Buscar por anel, ouro 18k, esmeralda..." 
+            class="w-full pl-11 pr-10 py-2.5 rounded-full bg-stone-50 border border-stone-200 text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition"
+          >
+          <button id="clearSearchBtn" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs">
+            <i class="fas fa-times-circle"></i>
+          </button>
+        </div>
+
+        <!-- Seletor de Ordenação -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+          <label for="sortSelect" class="text-xs font-medium text-stone-500 whitespace-nowrap hidden sm:inline">Ordenar:</label>
+          <select id="sortSelect" class="w-full sm:w-auto py-2.5 px-4 rounded-full bg-stone-50 border border-stone-200 text-xs sm:text-sm text-stone-700 focus:outline-none focus:border-[#C5A059] transition">
+            <option value="default">Destaques da Coleção</option>
+            <option value="price-asc">Menor Preço</option>
+            <option value="price-desc">Maior Preço</option>
+            <option value="name-asc">Nome (A - Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filtros por Categoria -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs sm:text-sm font-medium">
+        <button class="category-btn active px-4 py-2 rounded-full border transition whitespace-nowrap bg-stone-900 text-white border-stone-900" data-category="all">
+          Todos os Modelos
+        </button>
+        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Colares">
+          Colares & Chokers
+        </button>
+        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Brincos">
+          Brincos Finos
+        </button>
+        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Anéis">
+          Anéis & Solitários
+        </button>
+        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Pulseiras">
+          Pulseiras & Braceletes
+        </button>
+        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Coleção Ouro 18k">
+          <i class="fas fa-crown text-amber-500 mr-1"></i> Coleção Ouro 18k
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid de Produtos -->
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+      <!-- Inserido dinamicamente via app.js -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyCatalogState" class="hidden text-center py-16 px-4">
+      <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-400 mb-4">
+        <i class="fas fa-search text-xl"></i>
+      </div>
+      <h3 class="text-lg font-heading font-semibold text-stone-800 mb-1">Nenhuma joia encontrada</h3>
+      <p class="text-stone-500 text-sm max-w-md mx-auto mb-6">Tente ajustar seus termos de busca ou filtros para encontrar a peça perfeita.</p>
+      <button onclick="resetFilters()" class="px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs uppercase tracking-wider font-medium hover:bg-stone-800 transition">
+        Limpar Filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= ATELIÊ SOB MEDIDA: ENCOMENDE SUA JOIA ================= -->
+  <section id="atelie" class="py-24 bg-stone-900 text-[#FAF9F6] relative overflow-hidden">
+    <!-- Efeitos de iluminação de fundo -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      
+      <!-- Cabeçalho do Ateliê -->
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs uppercase tracking-[0.35em] text-[#C5A059] font-semibold block mb-2">Exclusividade Absoluta</span>
+        <h2 class="text-3xl sm:text-5xl font-heading font-bold mb-4">Ateliê de Joias Sob Medida</h2>
+        <div class="w-20 h-0.5 bg-gold-gradient mx-auto mb-6"></div>
+        <p class="text-stone-300 text-sm sm:text-base font-light leading-relaxed">
+          Transforme sua ideia, data comemorativa ou sentimento em uma joia única e eterna. Forjamos peças personalizadas em Ouro 18k com gemas nobres selecionadas à mão.
+        </p>
+      </div>
+
+      <!-- 3 Passos do Processo Artesanal -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="p-8 rounded-2xl bg-stone-800/50 border border-[#C5A059]/20 backdrop-blur-md relative group hover:border-[#C5A059] transition duration-300">
+          <div class="w-14 h-14 rounded-full bg-stone-900 border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059] text-xl font-bold mb-6 group-hover:scale-110 transition duration-300">
+            1
+          </div>
+          <h3 class="text-xl font-heading font-semibold text-white mb-3">Briefing & Conceito</h3>
+          <p class="text-stone-300 text-sm font-light leading-relaxed">
+            Compartilhe sua visão, referências visuais, significado e orçamento desejado através do nosso formulário exclusivo.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-stone-800/50 border border-[#C5A059]/20 backdrop-blur-md relative group hover:border-[#C5A059] transition duration-300">
+          <div class="w-14 h-14 rounded-full bg-stone-900 border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059] text-xl font-bold mb-6 group-hover:scale-110 transition duration-300">
+            2
+          </div>
+          <h3 class="text-xl font-heading font-semibold text-white mb-3">Render 3D & Orçamento</h3>
+          <p class="text-stone-300 text-sm font-light leading-relaxed">
+            Nossos designers modelam um render 3D hiper-realista da peça para sua aprovação antes de iniciar a manufatura.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-stone-800/50 border border-[#C5A059]/20 backdrop-blur-md relative group hover:border-[#C5A059] transition duration-300">
+          <div class="w-14 h-14 rounded-full bg-stone-900 border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059] text-xl font-bold mb-6 group-hover:scale-110 transition duration-300">
+            3
+          </div>
+          <h3 class="text-xl font-heading font-semibold text-white mb-3">Produção Artesanal</h3>
+          <p class="text-stone-300 text-sm font-light leading-relaxed">
+            Ourivesaria artesanal tradicional, cravação microscópica de gemas, certificado gemológico e entrega em estojo de veludo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Formulário de Encomenda -->
+      <div class="max-w-4xl mx-auto bg-stone-950/80 rounded-3xl p-6 sm:p-10 border border-[#C5A059]/30 shadow-2xl backdrop-blur-xl">
+        <div class="text-center mb-8">
+          <h3 class="text-2xl font-heading font-semibold text-white mb-2">Inicie seu Projeto no Ateliê</h3>
+          <p class="text-xs sm:text-sm text-stone-400">Preencha os detalhes e nossa equipe de ourives entrará em contato com a prévia e proposta.</p>
+        </div>
+
+        <form id="atelieForm" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Nome -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Seu Nome Completo *</label>
+              <input type="text" id="atelieNome" required placeholder="Ex: Bruna Siqueira" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-500 focus:outline-none focus:border-[#C5A059] transition text-sm">
+            </div>
+
+            <!-- WhatsApp -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">WhatsApp para Contato *</label>
+              <input type="tel" id="atelieWhatsapp" required placeholder="(11) 99999-9999" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-500 focus:outline-none focus:border-[#C5A059] transition text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Tipo de Joia -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Tipo de Joia *</label>
+              <select id="atelieTipo" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-[#C5A059] transition text-sm">
+                <option value="Anel Solitário">Anel Solitário</option>
+                <option value="Alianças de Casamento">Alianças de Casamento / Noivado</option>
+                <option value="Colar / Pingente">Colar / Pingente</option>
+                <option value="Brincos de Gala">Brincos de Gala</option>
+                <option value="Bracelete / Pulseira">Bracelete / Pulseira</option>
+                <option value="Tiara / Grinalda">Tiara / Grinalda</option>
+                <option value="Outro Design Exclusivo">Outro Design Exclusivo</option>
+              </select>
+            </div>
+
+            <!-- Metal / Material -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Metal / Material *</label>
+              <select id="atelieMetal" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-[#C5A059] transition text-sm">
+                <option value="Ouro 18k Amarelo (750)">Ouro 18k Amarelo (750)</option>
+                <option value="Ouro 18k Branco (750)">Ouro 18k Branco (750)</option>
+                <option value="Ouro 18k Rosé (750)">Ouro 18k Rosé (750)</option>
+                <option value="Platina 950">Platina 950</option>
+                <option value="Prata 925">Prata 925</option>
+                <option value="Semijoia Alta Fusão Ouro 18k">Semijoia Alta Fusão Ouro 18k</option>
+              </select>
+            </div>
+
+            <!-- Gema Principal -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Gema Principal *</label>
+              <select id="atelieGema" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-[#C5A059] transition text-sm">
+                <option value="Diamante Natural Certificado">Diamante Natural Certificado GIA</option>
+                <option value="Moissanite Flawless">Moissanite Flawless D-Color</option>
+                <option value="Esmeralda Colombiana">Esmeralda Colombiana Natural</option>
+                <option value="Safira Azul Royal">Safira Azul Royal</option>
+                <option value="Rubi Birmanês">Rubi Birmanês</option>
+                <option value="Pérola dos Mares do Sul">Pérola dos Mares do Sul</option>
+                <option value="Zircônia Lapidação Diamante">Zircônia Lapidação Diamante AAA+</option>
+                <option value="Sem Pedras (Apenas Metal)">Sem Pedras (Apenas Metal Polido)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Aro / Medida -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Aro / Medida</label>
+              <input type="text" id="atelieAro" placeholder="Ex: Aro 16, ou 45cm" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-500 focus:outline-none focus:border-[#C5A059] transition text-sm">
+            </div>
+
+            <!-- Orçamento Estimado -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Orçamento Pretendido</label>
+              <select id="atelieOrcamento" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-[#C5A059] transition text-sm">
+                <option value="Até R$ 2.500">Até R$ 2.500</option>
+                <option value="R$ 2.500 a R$ 6.000">R$ 2.500 a R$ 6.000</option>
+                <option value="R$ 6.000 a R$ 15.000">R$ 6.000 a R$ 15.000</option>
+                <option value="Acima de R$ 15.000">Acima de R$ 15.000 (Alta Joalheria)</option>
+              </select>
+            </div>
+
+            <!-- Prazo Limite Desejado -->
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Data Desejada / Evento</label>
+              <input type="date" id="ateliePrazo" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-[#C5A059] transition text-sm">
+            </div>
+          </div>
+
+          <!-- Descrição e Link de Referência -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Descrição do Conceito & Inspiração *</label>
+            <textarea id="atelieDescricao" rows="3" required placeholder="Conte-nos o conceito da peça, preferências de acabamento (polido, acetinado), gravação interna personalizada..." class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-500 focus:outline-none focus:border-[#C5A059] transition text-sm"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs uppercase tracking-wider text-stone-300 mb-2">Link de Referência Visual (Pinterest, Google Drive, Instagram)</label>
+            <input type="url" id="atelieLink" placeholder="https://pinterest.com/pin/..." class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-stone-800 text-white placeholder-stone-500 focus:outline-none focus:border-[#C5A059] transition text-sm">
+          </div>
+
+          <div class="pt-2 text-center">
+            <button type="submit" class="w-full sm:w-auto px-10 py-4 rounded-full bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-sm shadow-xl hover-glow transition transform active:scale-95">
+              <i class="fas fa-paper-plane mr-2"></i> Enviar Briefing para o Ateliê
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SOBRE A MARCA & HISTÓRIA INSTITUCIONAL ================= -->
+  <section id="sobre" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div class="relative">
+        <div class="aspect-[4/5] rounded-3xl overflow-hidden border border-[#C5A059]/30 shadow-2xl relative">
+          <img src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=1000&q=80" alt="Ourivesaria Bruna Valois" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-transparent to-transparent"></div>
+          <div class="absolute bottom-6 left-6 right-6 text-white">
+            <span class="text-xs uppercase tracking-[0.25em] text-[#C5A059] font-semibold block mb-1">Ourivesaria Autoral</span>
+            <p class="font-heading text-lg">"Uma joia não é apenas um adorno; é um testamento indelével de amor e conquista."</p>
+          </div>
+        </div>
+        <div class="hidden sm:block absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl border border-stone-200 shadow-xl max-w-xs">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-[#FAF9F6] border border-[#C5A059] flex items-center justify-center text-[#C5A059] text-xl">
+              <i class="fas fa-certificate"></i>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wider text-stone-400 font-semibold">Padronização</p>
+              <p class="text-sm font-heading font-bold text-stone-900">Ouro 18k 750 Certificado</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <span class="text-xs uppercase tracking-[0.3em] text-[#C5A059] font-semibold">Legado & Maestria</span>
+        <h2 class="text-3xl sm:text-4xl font-heading font-bold text-stone-900">Bruna Valois Joias & Semijoias</h2>
+        <div class="w-16 h-0.5 bg-[#C5A059]"></div>
+        <div id="aboutBrandContainer" class="text-stone-600 space-y-4 text-sm sm:text-base font-light leading-relaxed">
+          <p id="aboutBrandText">
+            Fundada com a vocação de redefinir o conceito de elegância e manufatura de joias finas, a Bruna Valois combina técnicas ancestrais da ourivesaria clássica com a sofisticação do design contemporâneo. Cada peça é criada para refletir autenticidade, poder e requinte.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 pt-4 border-t border-stone-200">
+          <div>
+            <h4 class="font-heading font-bold text-2xl text-stone-900">+10 Anos</h4>
+            <p class="text-xs text-stone-500 uppercase tracking-wider mt-1">De Maestria e Confiança</p>
+          </div>
+          <div>
+            <h4 class="font-heading font-bold text-2xl text-stone-900">100% Ética</h4>
+            <p class="text-xs text-stone-500 uppercase tracking-wider mt-1">Gemas de Origem Rastreável</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GARANTIA E CERTIFICADOS ================= -->
+  <section id="garantia" class="py-16 bg-[#FAF9F6] border-y border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="text-center p-6 rounded-2xl bg-white border border-stone-200/80 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h4 class="font-heading font-semibold text-stone-900 mb-2">Garantia Eterna</h4>
+          <p class="text-stone-500 text-xs leading-relaxed">Autenticidade vitalícia do teor do Ouro 18k e legitimidade de todas as pedras preciosas.</p>
+        </div>
+
+        <div class="text-center p-6 rounded-2xl bg-white border border-stone-200/80 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fas fa-gem"></i>
+          </div>
+          <h4 class="font-heading font-semibold text-stone-900 mb-2">Banho Ouro 18k Triplo</h4>
+          <p class="text-stone-500 text-xs leading-relaxed">Semijoias com camada ultraespessa de até 20 milésimos e verniz hipoalergênico Diamond.</p>
+        </div>
+
+        <div class="text-center p-6 rounded-2xl bg-white border border-stone-200/80 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fas fa-box-open"></i>
+          </div>
+          <h4 class="font-heading font-semibold text-stone-900 mb-2">Embalagem de Alta Joalheria</h4>
+          <p class="text-stone-500 text-xs leading-relaxed">Estojo luxuoso de veludo italiano, sacola presenteável e certificado físico lacrado.</p>
+        </div>
+
+        <div class="text-center p-6 rounded-2xl bg-white border border-stone-200/80 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-amber-50 text-[#C5A059] flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <h4 class="font-heading font-semibold text-stone-900 mb-2">Ajuste de Aro Gratuito</h4>
+          <p class="text-stone-500 text-xs leading-relaxed">Primeiro ajuste de medida de anéis e alianças por conta do ateliê em até 30 dias.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-stone-950 text-stone-400 text-xs py-16 border-t border-[#C5A059]/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
+      
+      <!-- Coluna 1: Marca -->
+      <div class="space-y-4">
+        <span class="text-2xl font-heading font-bold text-white block">BRUNA VALOIS</span>
+        <p class="text-stone-400 font-light leading-relaxed">
+          Ateliê de alta joalheria, alianças de casamento, solitários e semijoias nobres de alta fusão.
+        </p>
+        <div class="flex items-center gap-3 text-stone-300">
+          <a href="#" class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center hover:text-[#C5A059] transition"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center hover:text-[#C5A059] transition"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center hover:text-[#C5A059] transition"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <!-- Coluna 2: Navegação -->
+      <div class="space-y-3">
+        <h5 class="text-white font-semibold uppercase tracking-wider text-xs">Navegação Rápida</h5>
+        <ul class="space-y-2">
+          <li><a href="#vitrine" class="hover:text-[#C5A059] transition">Catálogo Completo</a></li>
+          <li><a href="#atelie" class="hover:text-[#C5A059] transition">Ateliê Sob Medida</a></li>
+          <li><a href="#sobre" class="hover:text-[#C5A059] transition">Nossa História</a></li>
+          <li><a href="#garantia" class="hover:text-[#C5A059] transition">Certificados & Cuidados</a></li>
+        </ul>
+      </div>
+
+      <!-- Coluna 3: Pagamento Seguro -->
+      <div class="space-y-3">
+        <h5 class="text-white font-semibold uppercase tracking-wider text-xs">Pagamento 100% Protegido</h5>
+        <p class="text-stone-400 text-xs">Processamento oficial via Mercado Pago com criptografia de ponta a ponta.</p>
+        <div class="flex flex-wrap gap-2 text-xl text-stone-300 pt-1">
+          <i class="fab fa-pix text-emerald-400" title="PIX Instantâneo"></i>
+          <i class="fab fa-cc-visa" title="Visa"></i>
+          <i class="fab fa-cc-mastercard text-amber-500" title="Mastercard"></i>
+          <i class="fab fa-cc-amex text-blue-400" title="American Express"></i>
+          <i class="fas fa-barcode" title="Boleto"></i>
+          <i class="fas fa-handshake text-sky-400" title="Mercado Pago"></i>
+        </div>
+      </div>
+
+      <!-- Coluna 4: Atendimento & CMS -->
+      <div class="space-y-3">
+        <h5 class="text-white font-semibold uppercase tracking-wider text-xs">Atendimento & Gestão</h5>
+        <p class="text-stone-400 text-xs">Segunda a Sábado das 09h às 19h</p>
+        <p id="footerPhone" class="text-white font-medium text-sm">+55 (11) 99999-9999</p>
+        <div class="pt-2">
+          <button onclick="requestCmsAccess()" class="px-4 py-2 rounded-lg bg-stone-900 border border-[#C5A059]/40 text-[#C5A059] hover:bg-[#C5A059] hover:text-stone-950 transition text-xs font-semibold flex items-center gap-2">
+            <i class="fas fa-lock"></i> Acessar Painel CMS
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-stone-900 text-center text-stone-500 text-[11px]">
+      <p>&copy; <span id="yearSpan">2026</span> Bruna Valois Joias e Semijoias. Todos os direitos reservados. CNPJ: 45.892.102/0001-44.</p>
+    </div>
+  </footer>
+
+  <!-- ================= SACOLA DE COMPRAS LATERAL (DRAWER) ================= -->
+  <div id="cartDrawerBackdrop" class="fixed inset-0 bg-stone-950/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300">
+    <div id="cartDrawer" class="fixed right-0 top-0 bottom-0 w-full max-w-md bg-[#FAF9F6] shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 z-50">
+      
+      <!-- Drawer Header -->
+      <div class="p-6 bg-[#1C1917] text-[#FAF9F6] flex items-center justify-between border-b border-[#C5A059]/30">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-shopping-bag text-[#C5A059]"></i>
+          <h3 class="font-heading font-semibold text-lg text-white">Sua Sacola de Joias</h3>
+          <span id="cartDrawerCount" class="bg-[#C5A059] text-stone-950 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <button id="cartCloseBtn" class="text-stone-400 hover:text-white transition text-lg p-1">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Barra de Frete Grátis -->
+      <div class="p-4 bg-white border-b border-stone-200">
+        <div class="flex justify-between items-center text-xs mb-1.5">
+          <span id="freeShippingLabel" class="font-medium text-stone-700">Faltam R$ 450,00 para Frete Grátis</span>
+          <span id="freeShippingPercent" class="font-bold text-[#C5A059]">0%</span>
+        </div>
+        <div class="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
+          <div id="freeShippingBar" class="h-full bg-gold-gradient transition-all duration-500" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Lista de Itens da Sacola -->
+      <div id="cartItemsList" class="flex-1 overflow-y-auto p-6 space-y-4">
+        <!-- Renderizado dinamicamente via app.js -->
+      </div>
+
+      <!-- Empty Cart State -->
+      <div id="emptyCartView" class="hidden flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-20 h-20 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 mb-4 text-2xl">
+          <i class="fas fa-gem"></i>
+        </div>
+        <h4 class="font-heading font-semibold text-stone-800 text-lg mb-2">Sua sacola está vazia</h4>
+        <p class="text-stone-500 text-xs max-w-xs mb-6">Explore nossas coleções exclusivas e adicione peças deslumbrantes à sua sacola.</p>
+        <button onclick="closeCart(); location.href='#vitrine';" class="px-6 py-3 rounded-full bg-stone-900 text-white text-xs uppercase tracking-wider font-semibold hover:bg-stone-800 transition">
+          Descobrir Joias
+        </button>
+      </div>
+
+      <!-- Drawer Footer (Subtotal, Frete, Checkout) -->
+      <div id="cartFooterView" class="p-6 bg-white border-t border-stone-200 space-y-4">
+        
+        <!-- Cupom de Desconto -->
+        <div class="flex gap-2">
+          <input type="text" id="couponInput" placeholder="Cupom de Desconto (ex: BRUNA10)" class="flex-1 px-3 py-2 text-xs uppercase rounded-lg border border-stone-200 focus:outline-none focus:border-[#C5A059]">
+          <button id="applyCouponBtn" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition">
+            Aplicar
+          </button>
+        </div>
+        <div id="couponAppliedFeedback" class="hidden text-xs text-emerald-600 font-medium flex items-center gap-1">
+          <i class="fas fa-check-circle"></i> Cupom de 10% aplicado com sucesso!
+        </div>
+
+        <!-- Totais -->
+        <div class="space-y-1.5 text-xs text-stone-600">
+          <div class="flex justify-between">
+            <span>Subtotal:</span>
+            <span id="cartSubtotal" class="font-semibold text-stone-800">R$ 0,00</span>
+          </div>
+          <div id="cartDiscountRow" class="hidden flex justify-between text-emerald-600">
+            <span>Desconto Especial (10%):</span>
+            <span id="cartDiscount">- R$ 0,00</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Frete com Seguro:</span>
+            <span id="cartShipping" class="font-semibold text-stone-800">Grátis</span>
+          </div>
+          <div class="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-200">
+            <span>Total da Compra:</span>
+            <span id="cartTotal" class="text-stone-900 font-heading">R$ 0,00</span>
+          </div>
+          <p id="cartInstallmentNotice" class="text-[11px] text-stone-500 text-right">
+            ou em até 10x sem juros no Mercado Pago
+          </p>
+        </div>
+
+        <!-- Botão Finalizar Compra -->
+        <button id="checkoutBtn" class="w-full py-4 rounded-full bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-xl hover-glow transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i class="fas fa-lock"></i> Finalizar Compra no Mercado Pago
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= CHECKOUT MERCADO PAGO EM MODAL EMBUTIDO ================= -->
+  <div id="mercadoPagoModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto">
+      
+      <!-- Cabeçalho Oficial Mercado Pago -->
+      <div class="bg-[#009EE3] text-white p-5 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <i class="fas fa-shield-check text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-lg tracking-tight">mercado pago</span>
+              <span class="text-[10px] uppercase font-bold bg-white text-[#009EE3] px-2 py-0.5 rounded-full">Checkout Oficial</span>
+            </div>
+            <p class="text-xs text-sky-100 flex items-center gap-1">
+              <i class="fas fa-lock text-[10px]"></i> Ambiente Criptografado SSL 256-bit
+            </p>
+          </div>
+        </div>
+        <button id="closeMpModalBtn" class="text-white/80 hover:text-white text-xl p-1">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Barra de Valor a Pagar -->
+      <div class="bg-sky-50 px-6 py-3 border-b border-sky-100 flex justify-between items-center text-xs sm:text-sm">
+        <span class="text-stone-700">Total a pagar para <strong>Bruna Valois Joias</strong>:</span>
+        <span id="mpPayAmount" class="text-lg font-bold text-stone-900 font-heading">R$ 0,00</span>
+      </div>
+
+      <!-- Abas de Pagamento Mercado Pago -->
+      <div class="flex border-b border-stone-200 bg-stone-50 text-xs sm:text-sm font-medium">
+        <button id="mpTabPix" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-[#009EE3] text-[#009EE3] font-bold transition flex items-center justify-center gap-2">
+          <i class="fab fa-pix text-emerald-500 text-base"></i> PIX Instantâneo
+        </button>
+        <button id="mpTabCard" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-2">
+          <i class="fas fa-credit-card text-blue-500 text-base"></i> Cartão de Crédito
+        </button>
+        <button id="mpTabBalance" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-2">
+          <i class="fas fa-wallet text-amber-500 text-base"></i> Saldo Mercado Pago
+        </button>
+      </div>
+
+      <!-- Conteúdo das Abas -->
+      <div class="p-6">
+        
+        <!-- ================= ABA 1: PIX INSTANTÂNEO ================= -->
+        <div id="mpViewPix" class="space-y-6">
+          <div class="text-center">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold mb-2">
+              <i class="fas fa-bolt"></i> Aprovação Imediata em até 10 segundos
+            </span>
+            <p class="text-xs text-stone-500">Escaneie o QR Code abaixo com o aplicativo do seu banco ou copie a chave:</p>
+          </div>
+
+          <!-- Container do QR Code e Timer -->
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-6 bg-stone-50 p-6 rounded-2xl border border-stone-200">
+            <!-- QR Code Canvas Container -->
+            <div id="pixQrCodeContainer" class="p-3 bg-white rounded-xl shadow-md border border-stone-200 flex items-center justify-center">
+              <!-- Renderizado via QRCode.js -->
+            </div>
+
+            <!-- Timer e Instruções -->
+            <div class="space-y-3 text-center sm:text-left flex-1">
+              <div class="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                <i class="fas fa-stopwatch"></i> Expira em: <span id="pixTimer" class="font-bold">14:59</span>
+              </div>
+              <p class="text-xs text-stone-600">
+                1. Abra o aplicativo do seu banco.<br>
+                2. Escolha pagar via <strong>PIX</strong> e escaneie o código ou cole a chave.<br>
+                3. O pedido é confirmado instantaneamente.
+              </p>
+            </div>
+          </div>
+
+          <!-- Código Copia e Cola -->
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1.5">Código PIX Copia e Cola:</label>
+            <div class="flex gap-2">
+              <input type="text" id="pixCodeInput" readonly value="00020126580014br.gov.bcb.pix0136brunavalois@joiasexclusivas.com.br5204000053039865802BR5925BRUNA VALOIS JOIAS6009SAO PAULO62070503***6304" class="flex-1 px-3 py-2 text-xs bg-stone-100 border border-stone-200 rounded-lg text-stone-700 font-mono truncate focus:outline-none">
+              <button id="copyPixBtn" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fas fa-copy"></i> <span>Copiar</span>
+              </button>
+            </div>
+            <p id="pixCopiedFeedback" class="hidden text-xs text-emerald-600 font-medium mt-1.5">
+              <i class="fas fa-check"></i> Código copiado para a área de transferência!
+            </p>
+          </div>
+
+          <!-- Botão Simular Confirmação Instantânea -->
+          <button id="simulatePixPaidBtn" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-check-circle"></i> Confirmar Pagamento Instantâneo (Simulação)
+          </button>
+        </div>
+
+        <!-- ================= ABA 2: CARTÃO DE CRÉDITO ================= -->
+        <div id="mpViewCard" class="hidden space-y-6">
+          
+          <!-- Virtual Credit Card Live Preview -->
+          <div class="virtual-card p-6 text-white max-w-sm mx-auto h-48 flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[9px] uppercase tracking-widest text-[#C5A059] block">Alta Joalheria</span>
+                <span class="font-heading text-sm font-semibold tracking-wider">BRUNA VALOIS</span>
+              </div>
+              <div id="cardBrandIcon" class="text-2xl text-stone-200">
+                <i class="fab fa-cc-visa"></i>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <span class="text-[9px] text-stone-400 uppercase tracking-widest">Número do Cartão</span>
+              <p id="cardPreviewNumber" class="font-mono text-base tracking-[0.2em] font-medium text-stone-100">
+                •••• •••• •••• ••••
+              </p>
+            </div>
+
+            <div class="flex justify-between items-end text-xs">
+              <div>
+                <span class="text-[8px] text-stone-400 uppercase tracking-wider block">Titular</span>
+                <span id="cardPreviewName" class="font-medium tracking-wider uppercase truncate max-w-[180px] block">NOME DO CLIENTE</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[8px] text-stone-400 uppercase tracking-wider block">Validade</span>
+                <span id="cardPreviewExpiry" class="font-mono font-medium">MM/AA</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário do Cartão -->
+          <form id="cardPaymentForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Número do Cartão *</label>
+              <div class="relative">
+                <input type="text" id="cardNumberInput" required maxlength="19" placeholder="0000 0000 0000 0000" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono">
+                <span id="cardInputBrandBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 text-lg">
+                  <i class="fas fa-credit-card"></i>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Nome Impresso no Cartão *</label>
+              <input type="text" id="cardNameInput" required placeholder="Como está no cartão" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm uppercase focus:outline-none focus:border-[#009EE3]">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Validade (MM/AA) *</label>
+                <input type="text" id="cardExpiryInput" required maxlength="5" placeholder="MM/AA" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono text-center">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">CVV / Segurança *</label>
+                <input type="password" id="cardCvvInput" required maxlength="4" placeholder="123" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono text-center">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">CPF do Titular *</label>
+              <input type="text" id="cardCpfInput" required maxlength="14" placeholder="000.000.000-00" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Opção de Parcelamento *</label>
+              <select id="cardInstallmentsSelect" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3]">
+                <!-- Preenchido dinamicamente com base no total e configuração CMS -->
+              </select>
+            </div>
+
+            <button type="submit" class="w-full py-4 rounded-xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+              <i class="fas fa-lock"></i> <span id="cardPayBtnText">Pagar R$ 0,00 com Mercado Pago</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- ================= ABA 3: SALDO EM CONTA MERCADO PAGO ================= -->
+        <div id="mpViewBalance" class="hidden space-y-6">
+          <div class="p-6 bg-sky-50 rounded-2xl border border-sky-200 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-[#009EE3] text-white flex items-center justify-center mx-auto text-2xl shadow-md">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-base">Conta Conectada ao Mercado Pago</h4>
+              <p class="text-xs text-stone-500">bruna.cliente.vip@mercadopago.com</p>
+            </div>
+            <div class="py-2 px-4 bg-white rounded-xl inline-block border border-sky-100 shadow-sm">
+              <span class="text-xs text-stone-500 block">Saldo Disponível:</span>
+              <span class="text-lg font-bold text-emerald-600">R$ 18.540,00</span>
+            </div>
+            <p class="text-xs text-stone-600 max-w-sm mx-auto">
+              Ao autorizar o débito, o valor da sua compra será deduzido instantaneamente do seu saldo com aprovação imediata.
+            </p>
+          </div>
+
+          <button id="payWithMpBalanceBtn" class="w-full py-4 rounded-xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+            <i class="fas fa-fingerprint text-lg"></i> Autorizar Débito Imediato de R$ <span id="mpBalancePayAmount">0,00</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE APROVAÇÃO & RECIBO DE COMPRA ================= -->
+  <div id="receiptModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div id="printableReceipt" class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto p-6 sm:p-8 space-y-6">
+      
+      <!-- Cabeçalho de Sucesso -->
+      <div class="text-center space-y-2">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl shadow-sm mb-3">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <span class="text-[10px] uppercase tracking-widest text-[#C5A059] font-bold block">Mercado Pago Gateway</span>
+        <h3 class="text-2xl font-heading font-bold text-stone-900">Pagamento Aprovado!</h3>
+        <p class="text-xs text-stone-500">Sua joia foi confirmada e entrou para a esteira de despacho seguro com seguro total.</p>
+      </div>
+
+      <!-- Detalhes do Comprovante -->
+      <div class="bg-stone-50 rounded-2xl p-5 border border-stone-200 space-y-3 text-xs text-stone-700">
+        <div class="flex justify-between pb-2 border-b border-stone-200">
+          <span class="text-stone-500">Código da Transação:</span>
+          <span id="receiptTransactionId" class="font-mono font-bold text-stone-900">#MP-74928103</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-500">Data e Hora:</span>
+          <span id="receiptDate" class="font-medium text-stone-900">28/10/2026 às 10:30</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-500">Método Utilizado:</span>
+          <span id="receiptMethod" class="font-medium text-stone-900">PIX Instantâneo</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-500">Status do Pedido:</span>
+          <span class="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Aprovado / Pago</span>
+        </div>
+        <div class="pt-2 border-t border-stone-200">
+          <span class="text-stone-500 block mb-1">Itens Adquiridos:</span>
+          <ul id="receiptItemsList" class="space-y-1 font-medium text-stone-800">
+            <!-- Itens inseridos dinamicamente -->
+          </ul>
+        </div>
+        <div class="flex justify-between pt-2 border-t border-stone-200 text-sm font-bold text-stone-900">
+          <span>Valor Total Pago:</span>
+          <span id="receiptTotalAmount" class="font-heading">R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Ações Pós-Venda -->
+      <div class="space-y-3 no-print">
+        <button id="sendToWhatsAppBtn" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2">
+          <i class="fab fa-whatsapp text-base"></i> Enviar Pedido para WhatsApp da Loja
+        </button>
+        <div class="flex gap-3">
+          <button onclick="window.print()" class="flex-1 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs transition flex items-center justify-center gap-2">
+            <i class="fas fa-print"></i> Imprimir Recibo
+          </button>
+          <button id="closeReceiptBtn" class="flex-1 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs transition">
+            Continuar Comprando
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE AUTENTICAÇÃO DO CMS (SENHA) ================= -->
+  <div id="cmsAuthModal" class="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[70] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+    <div class="bg-white cms-window rounded-3xl max-w-md w-full shadow-2xl border border-stone-200 overflow-hidden transform scale-95 transition-transform duration-300 p-6 sm:p-8 text-center text-stone-900">
+      
+      <!-- Ícone de Cadeado de Alta Joalheria -->
+      <div class="w-16 h-16 rounded-full bg-stone-900 text-[#C5A059] border border-[#C5A059]/40 flex items-center justify-center mx-auto mb-4 text-2xl shadow-md">
+        <i class="fas fa-lock"></i>
+      </div>
+
+      <span class="text-[10px] uppercase tracking-[0.25em] text-[#C5A059] font-bold block mb-1">Acesso Restrito</span>
+      <h3 class="text-2xl font-heading font-bold text-stone-900 mb-2">Painel de Gestão CMS</h3>
+      <p class="text-xs text-stone-500 mb-6 leading-relaxed">
+        Área administrativa exclusiva da <strong>Bruna Valois Joias</strong>. Digite a senha master para gerenciar temas, catálogo, ateliê e pagamentos.
+      </p>
+
+      <form id="cmsAuthForm" class="space-y-4">
+        <div>
+          <div class="relative">
+            <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+            <input 
+              type="password" 
+              id="cmsPasswordInput" 
+              placeholder="Digite a senha de acesso..." 
+              autocomplete="current-password"
+              required
+              class="w-full pl-11 pr-11 py-3 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition"
+            >
+            <button type="button" id="togglePasswordVisibilityBtn" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-sm p-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          
+          <!-- Mensagem de Erro -->
+          <div id="cmsAuthError" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-2.5 mt-2 flex items-center gap-2 justify-center font-medium">
+            <i class="fas fa-exclamation-circle"></i> <span>Senha incorreta. Tente novamente.</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeCmsAuthModal()" class="flex-1 py-3 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold uppercase tracking-wider transition">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-gold-gradient text-stone-950 font-bold text-xs uppercase tracking-wider shadow-md hover-glow transition transform active:scale-95 flex items-center justify-center gap-1.5">
+            <i class="fas fa-unlock-alt"></i> Desbloquear
+          </button>
+        </div>
+      </form>
+
+      <p class="text-[10px] text-stone-400 mt-4 flex items-center justify-center gap-1">
+        <i class="fas fa-shield-alt text-[#C5A059]"></i> Sessão administrativa protegida
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= PAINEL ADMINISTRATIVO CMS (MODAL/GAVETA) ================= -->
+  <div id="cmsModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+    <div class="bg-white cms-window rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 h-[90vh] max-h-[850px] flex flex-col text-stone-900">
+      
+      <!-- Header do CMS -->
+      <div class="bg-stone-900 text-white p-5 flex items-center justify-between border-b border-[#C5A059]/30 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-stone-800 border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059]">
+            <i class="fas fa-sliders-h"></i>
+          </div>
+          <div>
+            <h3 class="font-heading font-bold text-lg text-white">Painel CMS Administrativo</h3>
+            <div class="flex items-center gap-2 text-xs text-stone-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-beacon"></span>
+              <span>Sincronização em Tempo Real Ativa</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="logoutCms()" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white border border-stone-700 text-xs font-medium flex items-center gap-1.5 transition" title="Bloquear Painel">
+            <i class="fas fa-lock text-[#C5A059]"></i> <span class="hidden sm:inline">Bloquear</span>
+          </button>
+          <button onclick="closeCmsModal()" class="text-stone-400 hover:text-white text-xl p-1.5 rounded-lg hover:bg-stone-800 transition">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Abas de Navegação do CMS (Segmented Control Responsivo) -->
+      <div class="px-4 sm:px-6 py-3 bg-stone-50 border-b border-stone-200 flex-shrink-0">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 bg-stone-200/60 rounded-xl text-xs font-semibold">
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 active bg-white text-stone-950 shadow-sm border border-stone-200" data-tab="cmsTabTheme">
+            <i class="fas fa-palette text-[#C5A059]"></i> <span>Temas</span>
+          </button>
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabContent">
+            <i class="fas fa-edit text-stone-400"></i> <span>Conteúdos</span>
+          </button>
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabPayment">
+            <i class="fas fa-credit-card text-stone-400"></i> <span>Pagamentos</span>
+          </button>
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabProducts">
+            <i class="fas fa-gem text-stone-400"></i> <span>Catálogo</span>
+          </button>
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900 col-span-2 sm:col-span-1" data-tab="cmsTabAtelie">
+            <i class="fas fa-inbox text-stone-400"></i> <span>Encomendas</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Conteúdo do CMS com Scroll -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/60">
+        
+        <!-- ================= ABA 1: IDENTIDADE & TEMAS ================= -->
+        <div id="cmsTabTheme" class="cms-tab-content space-y-6">
+          <div>
+            <h4 class="font-heading font-semibold text-stone-900 text-base mb-1">Presets de Alta Joalheria Prontos</h4>
+            <p class="text-xs text-stone-500 mb-4">Selecione uma paleta concebida por designers para aplicar instantaneamente na loja:</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Preset 1 -->
+              <button id="presetBtn-classic" onclick="applyThemePreset('classic')" class="p-4 rounded-xl border border-stone-200 hover:border-[#C5A059] bg-white text-left shadow-sm transition hover:shadow-md group relative">
+                <div class="flex gap-1.5 mb-2.5">
+                  <span class="w-5 h-5 rounded-full bg-[#1C1917] border"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#C5A059]"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#FAF9F6] border"></span>
+                </div>
+                <span class="font-heading font-bold text-stone-900 text-xs block">Clássico Ouro & Nude</span>
+                <span class="text-[10px] text-stone-500">Onyx, Ouro Envelhecido & Alabastro</span>
+              </button>
+
+              <!-- Preset 2 -->
+              <button id="presetBtn-rose" onclick="applyThemePreset('rose')" class="p-4 rounded-xl border border-stone-200 hover:border-[#C07A76] bg-white text-left shadow-sm transition hover:shadow-md group relative">
+                <div class="flex gap-1.5 mb-2.5">
+                  <span class="w-5 h-5 rounded-full bg-[#2E282A] border"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#C07A76]"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#FFF9F9] border"></span>
+                </div>
+                <span class="font-heading font-bold text-stone-900 text-xs block">Minimal Rosé Gold</span>
+                <span class="text-[10px] text-stone-500">Antracite, Ouro Rosé & Nude Puro</span>
+              </button>
+
+              <!-- Preset 3 -->
+              <button id="presetBtn-emerald" onclick="applyThemePreset('emerald')" class="p-4 rounded-xl border border-stone-200 hover:border-[#D4AF37] bg-white text-left shadow-sm transition hover:shadow-md group relative">
+                <div class="flex gap-1.5 mb-2.5">
+                  <span class="w-5 h-5 rounded-full bg-[#062C22] border"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#D4AF37]"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#F4F9F6] border"></span>
+                </div>
+                <span class="font-heading font-bold text-stone-900 text-xs block">Esmeralda Real & Ouro</span>
+                <span class="text-[10px] text-stone-500">Verde Esmeralda & Ouro Nobre</span>
+              </button>
+
+              <!-- Preset 4 -->
+              <button id="presetBtn-champagne" onclick="applyThemePreset('champagne')" class="p-4 rounded-xl border border-stone-200 hover:border-[#E5C158] bg-white text-left shadow-sm transition hover:shadow-md group relative">
+                <div class="flex gap-1.5 mb-2.5">
+                  <span class="w-5 h-5 rounded-full bg-[#0F0F11] border"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#E5C158]"></span>
+                  <span class="w-5 h-5 rounded-full bg-[#F7F6F2] border"></span>
+                </div>
+                <span class="font-heading font-bold text-stone-900 text-xs block">Dark Champagne</span>
+                <span class="text-[10px] text-stone-500">Noite Ônix & Dourado Champagne</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ajuste Fino de Cores -->
+          <div class="pt-4 border-t border-stone-200">
+            <h4 class="font-heading font-semibold text-stone-900 text-base mb-1">Ajuste Fino de Cores</h4>
+            <p class="text-xs text-stone-500 mb-4">Personalize individualmente cada tom da identidade visual:</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Cor Primária</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="cmsColorPrimary" class="w-10 h-10 rounded border border-stone-300 cursor-pointer p-0.5">
+                  <span id="cmsHexPrimary" class="text-xs font-mono text-stone-600">#1C1917</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Cor Destaque (Gold)</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="cmsColorAccent" class="w-10 h-10 rounded border border-stone-300 cursor-pointer p-0.5">
+                  <span id="cmsHexAccent" class="text-xs font-mono text-stone-600">#C5A059</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Fundo da Loja</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="cmsColorBg" class="w-10 h-10 rounded border border-stone-300 cursor-pointer p-0.5">
+                  <span id="cmsHexBg" class="text-xs font-mono text-stone-600">#FAF9F6</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Fundo dos Cards</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="cmsColorCardBg" class="w-10 h-10 rounded border border-stone-300 cursor-pointer p-0.5">
+                  <span id="cmsHexCardBg" class="text-xs font-mono text-stone-600">#FFFFFF</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Cor do Texto</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="cmsColorText" class="w-10 h-10 rounded border border-stone-300 cursor-pointer p-0.5">
+                  <span id="cmsHexText" class="text-xs font-mono text-stone-600">#1C1917</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seletor de Tipografia -->
+          <div class="pt-4 border-t border-stone-200">
+            <label class="block text-xs font-medium text-stone-700 mb-1.5">Tipografia Editorial Principal</label>
+            <select id="cmsFontSelect" class="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-xs sm:text-sm focus:outline-none focus:border-[#C5A059]">
+              <option value="playfair">Playfair Display + Montserrat (Clássico Editorial)</option>
+              <option value="cormorant">Cormorant Garamond + Inter (Alta Joalheria Poética)</option>
+              <option value="cinzel">Cinzel + Montserrat (Realeza & Herança)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ================= ABA 2: EDITOR DE CONTEÚDOS ================= -->
+        <div id="cmsTabContent" class="cms-tab-content hidden space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">Texto da Barra Superior de Avisos / Frete</label>
+            <input type="text" id="cmsInputAnnouncement" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Título do Banner Hero</label>
+              <input type="text" id="cmsInputHeroTitle" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">WhatsApp Oficial de Atendimento</label>
+              <input type="text" id="cmsInputWhatsapp" placeholder="+55 11 99999-9999" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">Subtítulo do Banner Hero</label>
+            <textarea id="cmsInputHeroSubtitle" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">URL da Imagem de Destaque Hero</label>
+            <input type="url" id="cmsInputHeroImg" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">História Institucional "Sobre a Marca"</label>
+            <textarea id="cmsInputAboutBrand" rows="4" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]"></textarea>
+          </div>
+        </div>
+
+        <!-- ================= ABA 3: MERCADO PAGO & PIX ================= -->
+        <div id="cmsTabPayment" class="cms-tab-content hidden space-y-6">
+          <div class="p-4 bg-sky-50 rounded-2xl border border-sky-200 flex items-start gap-3">
+            <i class="fas fa-info-circle text-[#009EE3] text-lg mt-0.5"></i>
+            <div class="text-xs text-stone-700">
+              <span class="font-bold text-stone-900 block mb-0.5">Configurações de Produção & Teste</span>
+              Insira suas chaves de API oficiais geradas no Painel de Desenvolvedores do Mercado Pago.
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Mercado Pago Public Key</label>
+              <input type="text" id="cmsMpPublicKey" placeholder="APP_USR-xxxx-xxxx-xxxx" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 font-mono text-xs focus:outline-none focus:border-[#009EE3]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Mercado Pago Access Token</label>
+              <div class="relative">
+                <input type="password" id="cmsMpAccessToken" placeholder="APP_USR-xxxx-xxxx-xxxx" class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-stone-300 text-stone-800 font-mono text-xs focus:outline-none focus:border-[#009EE3]">
+                <button type="button" onclick="toggleTokenVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs p-1" title="Ver / Ocultar Token">
+                  <i id="tokenEyeIcon" class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Ambiente de Operação</label>
+              <select id="cmsMpEnvironment" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-xs sm:text-sm focus:outline-none focus:border-[#009EE3]">
+                <option value="sandbox">Sandbox (Ambiente de Testes)</option>
+                <option value="production">Produção Oficial</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Limite Parcelas Sem Juros</label>
+              <select id="cmsMpInstallments" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-xs sm:text-sm focus:outline-none focus:border-[#009EE3]">
+                <option value="1">1x (Apenas à vista)</option>
+                <option value="3">Até 3x sem juros</option>
+                <option value="6">Até 6x sem juros</option>
+                <option value="10" selected>Até 10x sem juros</option>
+                <option value="12">Até 12x sem juros</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Chave PIX Cadastrada</label>
+              <input type="text" id="cmsPixKey" placeholder="CNPJ, E-mail ou Celular" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-xs sm:text-sm focus:outline-none focus:border-[#009EE3]">
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= ABA 4: CRUD DE PRODUTOS ================= -->
+        <div id="cmsTabProducts" class="cms-tab-content hidden space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-heading font-semibold text-stone-900 text-base">Gerenciador de Joias & Catálogo</h4>
+              <p class="text-xs text-stone-500">Adicione, edite e organize as peças da sua vitrine:</p>
+            </div>
+            <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition">
+              <i class="fas fa-plus"></i> Nova Joia
+            </button>
+          </div>
+
+          <div class="overflow-x-auto border border-stone-200 rounded-2xl">
+            <table class="w-full text-left text-xs text-stone-700">
+              <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 uppercase font-semibold">
+                <tr>
+                  <th class="p-3">Joia</th>
+                  <th class="p-3">Categoria</th>
+                  <th class="p-3">Preço</th>
+                  <th class="p-3">Material/Pureza</th>
+                  <th class="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="cmsProductsTableBody" class="divide-y divide-stone-100">
+                <!-- Preenchido dinamicamente via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= ABA 5: ENCOMENDAS DO ATELIÊ ================= -->
+        <div id="cmsTabAtelie" class="cms-tab-content hidden space-y-4">
+          <div>
+            <h4 class="font-heading font-semibold text-stone-900 text-base mb-1">Briefings de Joias Sob Medida</h4>
+            <p class="text-xs text-stone-500 mb-4">Acompanhe e gerencie as encomendas personalizadas enviadas pelos clientes:</p>
+          </div>
+
+          <div id="cmsAtelieOrdersContainer" class="space-y-4">
+            <!-- Preenchido dinamicamente via app.js -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer do CMS -->
+      <div class="p-4 bg-stone-50 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <button onclick="restoreDefaultSettings()" class="text-xs text-rose-600 hover:text-rose-800 font-medium flex items-center gap-1">
+          <i class="fas fa-undo"></i> Restaurar Padrões de Fábrica
+        </button>
+        <div class="flex gap-2">
+          <button onclick="closeCmsModal()" class="px-5 py-2.5 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-100 font-semibold text-xs transition">
+            Fechar
+          </button>
+          <button onclick="saveCmsChanges()" class="px-6 py-2.5 rounded-xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-md hover-glow transition">
+            Salvar e Sincronizar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL ADICIONAR / EDITAR PRODUTO ================= -->
+  <div id="productFormModal" class="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[80] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white cms-window rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto p-6 space-y-4 text-stone-900">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-200">
+        <h3 id="productFormTitle" class="font-heading font-bold text-lg text-stone-900">Adicionar Nova Joia</h3>
+        <button onclick="closeProductFormModal()" class="text-stone-400 hover:text-stone-700 text-lg">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="productCrudForm" class="space-y-3.5 text-xs">
+        <input type="hidden" id="crudProductId">
+
+        <div>
+          <label class="block font-medium text-stone-700 mb-1">Nome da Joia *</label>
+          <input type="text" id="crudProductName" required placeholder="Ex: Anel Solitário Étoile Ouro 18k" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Categoria *</label>
+            <select id="crudProductCategory" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+              <option value="Colares">Colares</option>
+              <option value="Brincos">Brincos</option>
+              <option value="Anéis">Anéis</option>
+              <option value="Pulseiras">Pulseiras</option>
+              <option value="Coleção Ouro 18k">Coleção Ouro 18k</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Preço em R$ *</label>
+            <input type="number" step="0.01" id="crudProductPrice" required placeholder="2450.00" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-stone-700 mb-1">URL da Imagem da Peça *</label>
+          <input type="url" id="crudProductImage" required placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Selo / Tag de Destaque</label>
+            <input type="text" id="crudProductTag" placeholder="Ex: Alta Joalheria, Lançamento" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+          </div>
+
+          <div>
+            <label class="block font-medium text-stone-700 mb-1">Material / Pureza *</label>
+            <input type="text" id="crudProductMaterial" required placeholder="Ex: Ouro 18k 750 com Diamantes" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-stone-700 mb-1">Descrição Detalhada *</label>
+          <textarea id="crudProductDescription" rows="3" required placeholder="Detalhes de lapidação, quilates, fecho e pureza..." class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]"></textarea>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-stone-200">
+          <button type="button" onclick="closeProductFormModal()" class="px-4 py-2 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider shadow hover-glow">
+            Salvar Joia
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL QUICK VIEW DETALHES DO PRODUTO ================= -->
+  <div id="productDetailModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto">
+      <div class="relative p-6 sm:p-8">
+        <button onclick="closeProductDetailModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl z-10 p-2">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+          <div class="aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 relative">
+            <img id="detailProductImage" src="" alt="" class="w-full h-full object-cover">
+            <span id="detailProductTag" class="absolute top-3 left-3 bg-[#1C1917] text-[#C5A059] border border-[#C5A059]/40 text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full"></span>
+          </div>
+
+          <div class="space-y-4">
+            <span id="detailProductCategory" class="text-xs uppercase tracking-widest text-[#C5A059] font-bold block"></span>
+            <h3 id="detailProductName" class="text-2xl font-heading font-bold text-stone-900 leading-tight"></h3>
+            
+            <div class="space-y-1">
+              <span id="detailProductPrice" class="text-2xl font-heading font-bold text-stone-900 block"></span>
+              <p id="detailProductInstallments" class="text-xs text-stone-500 font-medium"></p>
+            </div>
+
+            <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-stone-500">Pureza / Metal:</span>
+                <span id="detailProductMaterial" class="font-semibold text-stone-800"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-stone-500">Certificado:</span>
+                <span class="font-semibold text-stone-800">Garantia Eterna Inclusa</span>
+              </div>
+            </div>
+
+            <p id="detailProductDescription" class="text-stone-600 text-xs sm:text-sm font-light leading-relaxed"></p>
+
+            <button id="detailAddToCartBtn" class="w-full py-3.5 rounded-full bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-lg hover-glow transition transform active:scale-95 flex items-center justify-center gap-2">
+              <i class="fas fa-shopping-bag"></i> Adicionar à Sacola
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 bg-[#1C1917] text-[#FAF9F6] border border-[#C5A059] px-5 py-3.5 rounded-2xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3 text-xs font-medium max-w-sm">
+    <i id="toastIcon" class="fas fa-check-circle text-[#C5A059] text-base"></i>
+    <span id="toastMessage">Operação realizada com sucesso.</span>
+  </div>
+
+  <!-- Floating CMS Admin Trigger Button -->
+  <button onclick="requestCmsAccess()" class="fixed bottom-6 left-6 z-40 bg-stone-900/90 hover:bg-stone-900 text-[#C5A059] border border-[#C5A059]/60 px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-semibold hover-glow transition-all duration-300 transform hover:scale-105" title="Abrir Painel Administrativo CMS (Bruna Valois)">
+    <i class="fas fa-sliders-h text-sm"></i> <span class="hidden sm:inline">Painel CMS</span>
+  </button>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

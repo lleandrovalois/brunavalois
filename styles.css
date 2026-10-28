@@ -1,0 +1,247 @@
+/* Bruna Valois Joias - Estilos de Alta Joalheria & Glassmorphism */
+
+:root {
+  --color-primary: #1C1917;
+  --color-accent: #C5A059;
+  --color-accent-hover: #D8B36E;
+  --color-accent-light: rgba(197, 160, 89, 0.12);
+  --color-bg: #FAF9F6;
+  --color-card-bg: #FFFFFF;
+  --color-text: #1C1917;
+  --color-text-muted: #78716C;
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Montserrat', sans-serif;
+  --gold-gradient: linear-gradient(135deg, #DFBA73 0%, #C5A059 50%, #9E7D3B 100%);
+  --gold-glow: 0 0 25px rgba(197, 160, 89, 0.28);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Tipografias Dinâmicas */
+.font-playfair { font-family: 'Playfair Display', serif; }
+.font-cormorant { font-family: 'Cormorant Garamond', serif; }
+.font-cinzel { font-family: 'Cinzel', serif; }
+.font-montserrat { font-family: 'Montserrat', sans-serif; }
+.font-inter { font-family: 'Inter', sans-serif; }
+
+/* Gradiente Dourado Exclusivo */
+.text-gold-gradient {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.bg-gold-gradient {
+  background: var(--gold-gradient);
+}
+
+.border-gold {
+  border-color: var(--color-accent);
+}
+
+.hover-glow:hover {
+  box-shadow: var(--gold-glow);
+}
+
+/* Glassmorphism Refinado */
+.glass-nav {
+  background: rgba(28, 25, 23, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 160, 89, 0.18);
+}
+
+.glass-modal {
+  background: rgba(28, 25, 23, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Efeito de Zoom Suave nos Cards */
+.product-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 30px -10px rgba(28, 25, 23, 0.12), var(--gold-glow);
+}
+
+.product-image-container img {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover .product-image-container img {
+  transform: scale(1.08);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1EFEA;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C5A059;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A6843D;
+}
+
+/* Drawer Transitions */
+.drawer-backdrop {
+  transition: opacity 0.3s ease;
+}
+
+.drawer-content {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Cartão de Crédito Interativo (Mercado Pago Virtual Card) */
+.virtual-card {
+  background: linear-gradient(135deg, #1C1917 0%, #292524 50%, #44403C 100%);
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(197, 160, 89, 0.4);
+}
+
+.virtual-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  bottom: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(197, 160, 89, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Badge Pulsante */
+.pulse-beacon {
+  animation: pulseBeacon 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulseBeacon {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.2);
+  }
+}
+
+/* Animação de Erro (Senha Incorreta) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Painel CMS - Estilos Próprios para Garantir Contraste e Exibição Impecável */
+.cms-window {
+  color: #1C1917 !important;
+}
+
+.cms-window h1, .cms-window h2, .cms-window h3, .cms-window h4, .cms-window h5 {
+  color: #1C1917 !important;
+}
+
+.cms-window label {
+  color: #44403C !important;
+}
+
+.cms-window input, .cms-window textarea, .cms-window select {
+  color: #1C1917 !important;
+  background-color: #FFFFFF !important;
+}
+
+.cms-window table {
+  color: #1C1917 !important;
+}
+
+/* Esconder barras de rolagem indesejadas (.no-scrollbar) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Scrollbar refinada e discreta para o painel CMS */
+.cms-window ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.cms-window ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cms-window ::-webkit-scrollbar-thumb {
+  background: #D6D3D1;
+  border-radius: 4px;
+}
+
+.cms-window ::-webkit-scrollbar-thumb:hover {
+  background: #C5A059;
+}
+
+/* Estilo de Impressão de Comprovante */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printableReceipt, #printableReceipt * {
+    visibility: visible;
+  }
+  #printableReceipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 24px;
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
