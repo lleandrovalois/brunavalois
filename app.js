@@ -59,9 +59,10 @@ const DEFAULT_CONTENT_CONFIG = {
 };
 
 const DEFAULT_PAYMENT_CONFIG = {
+  checkoutUrl: '',
   publicKey: 'APP_USR-78921-6543-9876-0001',
-  accessToken: 'APP_USR-9876543210-PROD-SECRET',
-  environment: 'sandbox',
+  accessToken: '',
+  environment: 'production',
   maxInstallmentsWithoutInterest: 10,
   pixKey: '45.892.102/0001-44'
 };
@@ -385,17 +386,19 @@ function applyPaymentConfig(payment, save = true) {
   }
 
   // Preencher inputs CMS
+  const elCheckoutUrl = document.getElementById('cmsMpCheckoutUrl');
   const elKey = document.getElementById('cmsMpPublicKey');
   const elToken = document.getElementById('cmsMpAccessToken');
   const elEnv = document.getElementById('cmsMpEnvironment');
   const elInst = document.getElementById('cmsMpInstallments');
   const elPix = document.getElementById('cmsPixKey');
 
-  if (elKey) elKey.value = payment.publicKey;
-  if (elToken) elToken.value = payment.accessToken;
-  if (elEnv) elEnv.value = payment.environment;
-  if (elInst) elInst.value = payment.maxInstallmentsWithoutInterest;
-  if (elPix) elPix.value = payment.pixKey;
+  if (elCheckoutUrl) elCheckoutUrl.value = payment.checkoutUrl || '';
+  if (elKey) elKey.value = payment.publicKey || '';
+  if (elToken) elToken.value = payment.accessToken || '';
+  if (elEnv) elEnv.value = payment.environment || 'production';
+  if (elInst) elInst.value = payment.maxInstallmentsWithoutInterest || 10;
+  if (elPix) elPix.value = payment.pixKey || '';
 
   if (save) Storage.setPayment(payment);
 }
@@ -718,285 +721,102 @@ function applyCoupon() {
   }
 }
 
-// ================= CHECKOUT 100% MERCADO PAGO EM MODAL EMBUTIDO =================
-let pixCountdownInterval = null;
-
-function openMercadoPagoCheckout() {
+// ================= CHECKOUT OFICIAL MERCADO PAGO =================
+async function payWithMercadoPago() {
   const cart = Storage.getCart();
   if (cart.length === 0) {
     showToast('Adicione ao menos uma joia à sacola antes de finalizar.');
     return;
   }
 
-  closeCart();
+  const paymentConfig = Storage.getPayment();
+  const btn = document.getElementById('checkoutBtn');
+  const originalHtml = btn ? btn.innerHTML : '';
 
-  const modal = document.getElementById('mercadoPagoModal');
-  if (modal) {
-    modal.classList.remove('hidden');
+  // 1. Se houver Link Direto de Pagamento / Checkout Pro configurado no CMS
+  if (paymentConfig.checkoutUrl && paymentConfig.checkoutUrl.trim().startsWith('http')) {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Abrindo Mercado Pago...';
+    }
+    showToast('Redirecionando para a interface oficial do Mercado Pago...');
     setTimeout(() => {
-      modal.classList.remove('opacity-0');
-      modal.firstElementChild.classList.remove('scale-95');
-    }, 10);
+      window.location.href = paymentConfig.checkoutUrl.trim();
+    }, 600);
+    return;
   }
 
-  // Calcular valor a pagar
-  let subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  let discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
-  const total = subtotal - discount;
-
-  const formattedTotal = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  document.getElementById('mpPayAmount').innerText = formattedTotal;
-  document.getElementById('cardPayBtnText').innerText = `Pagar ${formattedTotal} com Mercado Pago`;
-  document.getElementById('mpBalancePayAmount').innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-  // Iniciar PIX e Parcelas
-  generatePixPayment(total);
-  setupCardInstallments(total);
-  switchMpTab('pix');
-}
-
-function closeMercadoPagoCheckout() {
-  const modal = document.getElementById('mercadoPagoModal');
-  if (modal) {
-    modal.classList.add('opacity-0');
-    modal.firstElementChild.classList.add('scale-95');
-    setTimeout(() => modal.classList.add('hidden'), 300);
-  }
-  if (pixCountdownInterval) clearInterval(pixCountdownInterval);
-}
-
-function switchMpTab(tab) {
-  const tabPix = document.getElementById('mpTabPix');
-  const tabCard = document.getElementById('mpTabCard');
-  const tabBalance = document.getElementById('mpTabBalance');
-
-  const viewPix = document.getElementById('mpViewPix');
-  const viewCard = document.getElementById('mpViewCard');
-  const viewBalance = document.getElementById('mpViewBalance');
-
-  [tabPix, tabCard, tabBalance].forEach(t => {
-    t.classList.remove('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
-    t.classList.add('border-transparent', 'text-stone-600');
-  });
-
-  [viewPix, viewCard, viewBalance].forEach(v => v.classList.add('hidden'));
-
-  if (tab === 'pix') {
-    tabPix.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
-    tabPix.classList.remove('border-transparent', 'text-stone-600');
-    viewPix.classList.remove('hidden');
-  } else if (tab === 'card') {
-    tabCard.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
-    tabCard.classList.remove('border-transparent', 'text-stone-600');
-    viewCard.classList.remove('hidden');
-  } else if (tab === 'balance') {
-    tabBalance.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
-    tabBalance.classList.remove('border-transparent', 'text-stone-600');
-    viewBalance.classList.remove('hidden');
-  }
-}
-
-// 1. PIX Instantâneo
-function generatePixPayment(amount) {
-  const paymentConfig = Storage.getPayment();
-  const pixContainer = document.getElementById('pixQrCodeContainer');
-  if (!pixContainer) return;
-
-  pixContainer.innerHTML = '';
-
-  const cleanAmount = amount.toFixed(2);
-  const pixKey = paymentConfig.pixKey || 'brunavalois@joiasexclusivas.com.br';
-  const pixPayload = `00020126580014br.gov.bcb.pix0136${pixKey}520400005303986540${cleanAmount.length}${cleanAmount}5802BR5925BRUNA VALOIS JOIAS6009SAO PAULO62070503***6304`;
-
-  document.getElementById('pixCodeInput').value = pixPayload;
-
-  // Renderizar QR Code real
-  try {
-    new QRCode(pixContainer, {
-      text: pixPayload,
-      width: 160,
-      height: 160,
-      colorDark: "#1C1917",
-      colorLight: "#FFFFFF",
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch (err) {
-    pixContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(pixPayload)}" alt="QR Code PIX" class="w-40 h-40">`;
-  }
-
-  // Timer de 15 minutos
-  if (pixCountdownInterval) clearInterval(pixCountdownInterval);
-  let timeLeft = 15 * 60; // 900 segundos
-
-  const timerEl = document.getElementById('pixTimer');
-  pixCountdownInterval = setInterval(() => {
-    timeLeft--;
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    if (timerEl) {
-      timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-    if (timeLeft <= 0) {
-      clearInterval(pixCountdownInterval);
-      if (timerEl) timerEl.innerText = 'Expirado';
-    }
-  }, 1000);
-}
-
-function copyPixCode() {
-  const input = document.getElementById('pixCodeInput');
-  const feedback = document.getElementById('pixCopiedFeedback');
-  if (!input) return;
-
-  input.select();
-  input.setSelectionRange(0, 99999);
-  navigator.clipboard.writeText(input.value).then(() => {
-    feedback?.classList.remove('hidden');
-    showToast('Código PIX Copia e Cola copiado com sucesso!');
-    setTimeout(() => feedback?.classList.add('hidden'), 3500);
-  });
-}
-
-// 2. Cartão de Crédito com Detecção de Bandeira e Validações
-function setupCardInstallments(total) {
-  const select = document.getElementById('cardInstallmentsSelect');
-  if (!select) return;
-
-  const paymentConfig = Storage.getPayment();
-  const maxWithoutInterest = paymentConfig.maxInstallmentsWithoutInterest || 10;
-
-  select.innerHTML = '';
-
-  for (let i = 1; i <= 12; i++) {
-    let installmentValue = 0;
-    let label = '';
-
-    if (i <= maxWithoutInterest) {
-      installmentValue = total / i;
-      label = `${i}x de R$ ${installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} sem juros (Total: ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
-    } else {
-      // 1.99% a.m. simulado acima do limite
-      const interestRate = 0.0199;
-      const totalWithInterest = total * Math.pow(1 + interestRate, i);
-      installmentValue = totalWithInterest / i;
-      label = `${i}x de R$ ${installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} com juros (Total: ${totalWithInterest.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+  // 2. Se houver Access Token oficial, criar Preference via API Mercado Pago
+  if (paymentConfig.accessToken && paymentConfig.accessToken.trim().startsWith('APP_USR')) {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando ao Mercado Pago...';
     }
 
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.innerText = label;
-    select.appendChild(opt);
+    try {
+      const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
+      const total = Math.max(0, subtotal - discount);
+
+      const items = cart.map(item => ({
+        id: item.id,
+        title: item.name,
+        quantity: item.quantity,
+        currency_id: 'BRL',
+        unit_price: Number(item.price)
+      }));
+
+      const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${paymentConfig.accessToken.trim()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items,
+          statement_descriptor: 'BRUNA VALOIS',
+          back_urls: {
+            success: window.location.origin + '?status=approved',
+            failure: window.location.origin + '?status=failure',
+            pending: window.location.origin + '?status=pending'
+          },
+          auto_return: 'approved'
+        })
+      });
+
+      const data = await res.json();
+      const targetUrl = paymentConfig.environment === 'sandbox' && data.sandbox_init_point
+        ? data.sandbox_init_point
+        : data.init_point;
+
+      if (targetUrl) {
+        showToast('Redirecionando para o Mercado Pago...');
+        window.location.href = targetUrl;
+        return;
+      }
+    } catch (err) {
+      console.warn('Erro ao gerar preferência no Mercado Pago:', err);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
   }
-}
 
-function handleCardNumberInput(e) {
-  let val = e.target.value.replace(/\D/g, '');
-  val = val.substring(0, 16);
-  
-  // Format 0000 0000 0000 0000
-  let formatted = '';
-  for (let i = 0; i < val.length; i++) {
-    if (i > 0 && i % 4 === 0) formatted += ' ';
-    formatted += val[i];
+  // 3. Fallback: redirecionar para a interface oficial do Mercado Pago
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Abrindo Mercado Pago...';
   }
-  e.target.value = formatted;
-
-  // Atualizar Preview
-  const previewNum = document.getElementById('cardPreviewNumber');
-  if (previewNum) {
-    previewNum.innerText = formatted ? formatted.padEnd(19, '•') : '•••• •••• •••• ••••';
-  }
-
-  // Detecção da Bandeira
-  detectCardBrand(val);
-}
-
-function detectCardBrand(num) {
-  const icon = document.getElementById('cardBrandIcon');
-  const badge = document.getElementById('cardInputBrandBadge');
-  if (!icon || !badge) return;
-
-  let brandIconHtml = '<i class="fas fa-credit-card"></i>';
-
-  if (num.startsWith('4')) {
-    brandIconHtml = '<i class="fab fa-cc-visa text-blue-400"></i>';
-  } else if (/^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[01]|2720)/.test(num)) {
-    brandIconHtml = '<i class="fab fa-cc-mastercard text-amber-500"></i>';
-  } else if (/^3[47]/.test(num)) {
-    brandIconHtml = '<i class="fab fa-cc-amex text-sky-400"></i>';
-  } else if (/^(4011|4389|5067|5090)/.test(num)) {
-    brandIconHtml = '<span class="font-bold text-xs bg-red-600 text-white px-1.5 py-0.5 rounded">ELO</span>';
-  } else if (/^6062/.test(num)) {
-    brandIconHtml = '<span class="font-bold text-xs bg-red-700 text-white px-1.5 py-0.5 rounded">HIPER</span>';
-  }
-
-  icon.innerHTML = brandIconHtml;
-  badge.innerHTML = brandIconHtml;
-}
-
-function handleCardNameInput(e) {
-  const val = e.target.value.toUpperCase();
-  document.getElementById('cardPreviewName').innerText = val || 'NOME DO CLIENTE';
-}
-
-function handleCardExpiryInput(e) {
-  let val = e.target.value.replace(/\D/g, '');
-  if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2, 4);
-  e.target.value = val;
-  document.getElementById('cardPreviewExpiry').innerText = val || 'MM/AA';
-}
-
-function handleCardCpfInput(e) {
-  let val = e.target.value.replace(/\D/g, '');
-  if (val.length > 11) val = val.substring(0, 11);
-  if (val.length > 9) val = val.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
-  else if (val.length > 6) val = val.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-  else if (val.length > 3) val = val.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
-  e.target.value = val;
-}
-
-// 3. Conclusão e Aprovação da Compra
-let lastOrderData = null;
-
-function finalizePurchase(paymentMethodName) {
-  const cart = Storage.getCart();
-  if (cart.length === 0) return;
-
-  let subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  let discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
-  const total = subtotal - discount;
-
-  const transactionId = `#MP-${Math.floor(10000000 + Math.random() * 90000000)}`;
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-  lastOrderData = {
-    transactionId,
-    dateStr,
-    method: paymentMethodName,
-    items: [...cart],
-    total,
-    formattedTotal: total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  };
-
-  closeMercadoPagoCheckout();
-  openReceiptModal(lastOrderData);
-
-  // Efeito de celebração com confetes dourados
-  try {
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#C5A059', '#DFBA73', '#FFFFFF', '#009EE3']
-    });
-  } catch (e) {}
-
-  // Limpar sacola após compra aprovada
-  Storage.setCart([]);
-  activeCoupon = null;
-  updateCartBadge();
-  renderCart();
+  showToast('Redirecionando para a interface oficial do Mercado Pago...');
+  setTimeout(() => {
+    window.open('https://www.mercadopago.com.br/', '_blank');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }, 600);
 }
 
 function openReceiptModal(order) {
@@ -1285,11 +1105,12 @@ function saveCmsChanges() {
 
   // Salvar Pagamentos
   const updatedPayment = {
-    publicKey: document.getElementById('cmsMpPublicKey').value,
-    accessToken: document.getElementById('cmsMpAccessToken').value,
+    checkoutUrl: document.getElementById('cmsMpCheckoutUrl') ? document.getElementById('cmsMpCheckoutUrl').value.trim() : '',
+    publicKey: document.getElementById('cmsMpPublicKey').value.trim(),
+    accessToken: document.getElementById('cmsMpAccessToken').value.trim(),
     environment: document.getElementById('cmsMpEnvironment').value,
     maxInstallmentsWithoutInterest: parseInt(document.getElementById('cmsMpInstallments').value, 10),
-    pixKey: document.getElementById('cmsPixKey').value
+    pixKey: document.getElementById('cmsPixKey').value.trim()
   };
   applyPaymentConfig(updatedPayment, true);
 
@@ -1662,40 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'cartDrawerBackdrop') closeCart();
   });
   document.getElementById('applyCouponBtn')?.addEventListener('click', applyCoupon);
-  document.getElementById('checkoutBtn')?.addEventListener('click', openMercadoPagoCheckout);
-
-  // 6. Listeners do Mercado Pago Checkout
-  document.getElementById('closeMpModalBtn')?.addEventListener('click', closeMercadoPagoCheckout);
-  document.getElementById('mpTabPix')?.addEventListener('click', () => switchMpTab('pix'));
-  document.getElementById('mpTabCard')?.addEventListener('click', () => switchMpTab('card'));
-  document.getElementById('mpTabBalance')?.addEventListener('click', () => switchMpTab('balance'));
-  document.getElementById('copyPixBtn')?.addEventListener('click', copyPixCode);
-
-  document.getElementById('simulatePixPaidBtn')?.addEventListener('click', () => {
-    finalizePurchase('PIX Instantâneo Oficial');
-  });
-
-  document.getElementById('payWithMpBalanceBtn')?.addEventListener('click', () => {
-    finalizePurchase('Saldo em Conta Mercado Pago');
-  });
-
-  // Inputs do Cartão de Crédito
-  const cardNum = document.getElementById('cardNumberInput');
-  const cardName = document.getElementById('cardNameInput');
-  const cardExp = document.getElementById('cardExpiryInput');
-  const cardCpf = document.getElementById('cardCpfInput');
-
-  if (cardNum) cardNum.addEventListener('input', handleCardNumberInput);
-  if (cardName) cardName.addEventListener('input', handleCardNameInput);
-  if (cardExp) cardExp.addEventListener('input', handleCardExpiryInput);
-  if (cardCpf) cardCpf.addEventListener('input', handleCardCpfInput);
-
-  document.getElementById('cardPaymentForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const instSelect = document.getElementById('cardInstallmentsSelect');
-    const selectedInst = instSelect ? instSelect.value : '1';
-    finalizePurchase(`Cartão de Crédito em ${selectedInst}x`);
-  });
+  document.getElementById('checkoutBtn')?.addEventListener('click', payWithMercadoPago);
 
   // 7. Listeners do Recibo Pós-Venda
   document.getElementById('closeReceiptBtn')?.addEventListener('click', closeReceiptModal);
