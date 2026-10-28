@@ -1260,7 +1260,6 @@ async function processOrderCheckout() {
     localStorage.setItem('BV_LAST_ORDER_ID', data.orderId);
 
     // Limpa a sacola
-    cart = [];
     Storage.setCart([]);
     updateCartBadge();
     renderCart();
