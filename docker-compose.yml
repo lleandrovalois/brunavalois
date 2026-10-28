@@ -6,7 +6,7 @@ services:
     container_name: brunavalois
     restart: unless-stopped
     ports:
-      - "${PORT:-8088}:80"
+      - "8088:80"
     env_file:
       - .env
     volumes:
