@@ -721,62 +721,27 @@ function hideCloudPermissionError() {
 // ================= 5. SEEDING GLOBAL DETERMINÍSTICO & LISTENERS EM TEMPO REAL =================
 let realtimeWatchdogTimer = null;
 
-async function migrateLegacyLocalDataIfPresent() {
+function clearLegacyLocalStorageKeys() {
   try {
-    const legacyProductsRaw = localStorage.getItem('BV_PRODUCTS');
-    if (legacyProductsRaw) {
-      const legacyProducts = JSON.parse(legacyProductsRaw);
-      if (Array.isArray(legacyProducts)) {
-        const defaultIds = new Set(INITIAL_PRODUCTS.map(p => p.id));
-        const hasCustomOrEditedCatalog =
-          legacyProducts.length !== INITIAL_PRODUCTS.length ||
-          legacyProducts.some(p => !defaultIds.has(p.id));
-
-        if (hasCustomOrEditedCatalog) {
-          console.log('[CloudMigration] Migrando catálogo pendente do navegador para o banco central na nuvem...');
-          const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-          const currentRemoteSnap = await getDocs(productsColRef);
-          const keepIds = new Set(legacyProducts.map(p => String(p.id)));
-
-          // Remove peças padrões que foram excluídas pela administradora
-          for (const docSnap of currentRemoteSnap.docs) {
-            if (!keepIds.has(String(docSnap.id))) {
-              const delRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id);
-              await deleteDoc(delRef);
-            }
-          }
-
-          // Sobe todas as peças cadastradas pela administradora para a nuvem
-          for (const item of legacyProducts) {
-            const itemId = String(item.id || `bv-prod-${Date.now()}`);
-            const itemRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', itemId);
-            await setDoc(itemRef, { ...item, id: itemId, updatedAt: new Date().toISOString() }, { merge: true });
-          }
-        }
-      }
-    }
-
-    // Remove definitivamente chaves legadas de localStorage para impedir fragmentação futura
     localStorage.removeItem('BV_PRODUCTS');
     localStorage.removeItem('BV_THEME_CONFIG');
     localStorage.removeItem('BV_CONTENT_CONFIG');
     localStorage.removeItem('BV_PAYMENT_CONFIG');
     localStorage.removeItem('BV_ATELIE_ORDERS');
-  } catch (err) {
-    console.warn('[CloudMigration] Aviso na limpeza de chaves legadas:', err);
-  }
+  } catch {}
 }
 
 async function seedInitialCloudData() {
   ensureCloudAuthenticated();
+  clearLegacyLocalStorageKeys();
 
   const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
   const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
   const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_orders');
 
-  // 1. Verificar se o documento mestre site_config/main existe na nuvem
+  // Executa o seed inicial SOMENTE na primeira criação absoluta do banco (quando site_config/main ainda não existe).
+  // Assim, se a administradora excluir todas as joias do catálogo, elas permanecerão excluídas ao recarregar a página.
   const configSnap = await getDoc(configDocRef);
-  const alreadySeeded = configSnap.exists() && Boolean(configSnap.data()?.initialSeedCompleted);
 
   if (!configSnap.exists()) {
     await setDoc(configDocRef, {
@@ -786,10 +751,7 @@ async function seedInitialCloudData() {
       initialSeedCompleted: true,
       updatedAt: new Date().toISOString()
     }, { merge: true });
-  }
 
-  // 2. Se for a primeira inicialização do banco na nuvem e a coleção estiver vazia, executa o seed das 8 joias iniciais
-  if (!alreadySeeded) {
     const productsSnap = await getDocs(productsColRef);
     if (productsSnap.empty) {
       for (const product of INITIAL_PRODUCTS) {
@@ -806,9 +768,6 @@ async function seedInitialCloudData() {
       }
     }
   }
-
-  // 3. Migra eventuais peças que estavam presas em cache local antes da atualização e limpa chaves antigas
-  await migrateLegacyLocalDataIfPresent();
 }
 
 function startRealtimeSyncWatchdog() {
@@ -3059,6 +3018,17 @@ function renderCmsProductsTable() {
   if (!tbody) return;
 
   const products = Storage.getProducts();
+
+  if (!products || products.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="p-8 text-center text-stone-400 text-xs">
+          Nenhuma joia cadastrada no catálogo em nuvem. Clique em <strong>"+ Nova Joia"</strong> acima para adicionar.
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   tbody.innerHTML = products.map(item => `
     <tr class="hover:bg-stone-50 transition" data-product-row="${item.id}">

@@ -237,6 +237,7 @@ class CloudRealtimeStore {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed.collections === 'object') {
           this.collections = parsed.collections;
+          this.ensureDeterministicSeed(DEFAULT_APP_ID);
           console.log('[CloudRealtimeStore] ☁️ Estado global carregado do disco com sucesso.');
           return;
         }
@@ -276,7 +277,7 @@ class CloudRealtimeStore {
     const ordersColPath = `${base}/custom_orders`;
 
     const existingMain = this.collections[configColPath] && this.collections[configColPath]['main'];
-    const alreadySeeded = Boolean(existingMain && existingMain.initialSeedCompleted);
+    const alreadySeeded = Boolean(existingMain);
 
     if (!existingMain) {
       if (!this.collections[configColPath]) this.collections[configColPath] = {};
@@ -287,7 +288,8 @@ class CloudRealtimeStore {
       modified = true;
     }
 
-    if (!alreadySeeded && (!this.collections[productsColPath] || Object.keys(this.collections[productsColPath]).length === 0)) {
+    // Só popula os produtos iniciais na primeiríssima execução (quando site_config/main ainda não existia)
+    if (!alreadySeeded && !this.collections[productsColPath]) {
       this.collections[productsColPath] = {};
       for (const prod of INITIAL_PRODUCTS) {
         this.collections[productsColPath][prod.id] = { ...prod };
