@@ -160,6 +160,57 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
+const INITIAL_CATEGORIES = [
+  {
+    id: 'cat-colares',
+    name: 'Colares',
+    slug: 'colares',
+    description: 'Rivieras, gargantilhas, chokers e colares de alta joalheria.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:01.000Z'
+  },
+  {
+    id: 'cat-brincos',
+    name: 'Brincos',
+    slug: 'brincos',
+    description: 'Brincos clássicos, ear cuffs e cascatas cravejadas.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:02.000Z'
+  },
+  {
+    id: 'cat-aneis',
+    name: 'Anéis',
+    slug: 'aneis',
+    description: 'Solitários, aparadores e anéis autorais em Ouro 18k e gemas naturais.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:03.000Z'
+  },
+  {
+    id: 'cat-pulseiras',
+    name: 'Pulseiras',
+    slug: 'pulseiras',
+    description: 'Pulseiras tênis, braceletes rígidos e malhas nobres.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:04.000Z'
+  },
+  {
+    id: 'cat-aliancas',
+    name: 'Alianças',
+    slug: 'aliancas',
+    description: 'Alianças de casamento, noivado e bodas sob medida.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:05.000Z'
+  },
+  {
+    id: 'cat-ouro-18k',
+    name: 'Coleção Ouro 18k',
+    slug: 'colecao-ouro-18k',
+    description: 'Peças exclusivas confeccionadas em Ouro 18k (750) maciço.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:06.000Z'
+  }
+];
+
 const INITIAL_ATELIE_ORDERS = [
   {
     id: 'AT-8912',
@@ -204,6 +255,7 @@ const CloudState = {
   theme: { ...DEFAULT_THEME_CONFIG },
   content: { ...DEFAULT_CONTENT_CONFIG },
   payment: { ...DEFAULT_PAYMENT_CONFIG },
+  categories: [],
   products: [],
   customOrders: [],
   isAuthenticated: false,
@@ -216,6 +268,7 @@ const Storage = {
   getTheme: () => CloudState.theme,
   getContent: () => CloudState.content,
   getPayment: () => CloudState.payment,
+  getCategories: () => CloudState.categories,
   getProducts: () => CloudState.products,
   getAtelieOrders: () => CloudState.customOrders,
 
@@ -736,6 +789,7 @@ async function seedInitialCloudData() {
   clearLegacyLocalStorageKeys();
 
   const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+  const categoriesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
   const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
   const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_orders');
 
@@ -749,8 +803,17 @@ async function seedInitialCloudData() {
       content: DEFAULT_CONTENT_CONFIG,
       payment: DEFAULT_PAYMENT_CONFIG,
       initialSeedCompleted: true,
+      categoriesSeeded: true,
       updatedAt: new Date().toISOString()
     }, { merge: true });
+
+    const categoriesSnap = await getDocs(categoriesColRef);
+    if (categoriesSnap.empty) {
+      for (const cat of INITIAL_CATEGORIES) {
+        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id);
+        await setDoc(catDocRef, cat, { merge: true });
+      }
+    }
 
     const productsSnap = await getDocs(productsColRef);
     if (productsSnap.empty) {
@@ -767,6 +830,16 @@ async function seedInitialCloudData() {
         await setDoc(orderDocRef, order, { merge: true });
       }
     }
+  } else if (!configSnap.data()?.categoriesSeeded) {
+    // Caso o banco já existisse antes do módulo de categorias, popula as categorias padrões uma única vez
+    const categoriesSnap = await getDocs(categoriesColRef);
+    if (categoriesSnap.empty) {
+      for (const cat of INITIAL_CATEGORIES) {
+        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id);
+        await setDoc(catDocRef, cat, { merge: true });
+      }
+    }
+    await setDoc(configDocRef, { categoriesSeeded: true }, { merge: true });
   }
 }
 
@@ -795,6 +868,7 @@ function setupRealtimeListeners() {
   ensureCloudAuthenticated();
 
   const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+  const categoriesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
   const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
   const customOrdersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_orders');
 
@@ -826,7 +900,33 @@ function setupRealtimeListeners() {
     }
   );
 
-  // 2. Ouvinte Contínuo: Coleção Global de Produtos (products)
+  // 2. Ouvinte Contínuo: Coleção Global de Categorias (categories)
+  onSnapshot(
+    categoriesColRef,
+    (snapshot) => {
+      updateCloudConnectionStatus('connected');
+      const remoteCategories = [];
+      snapshot.forEach((docSnap) => {
+        const cat = docSnap.data();
+        if (cat) {
+          remoteCategories.push({ ...cat, id: cat.id || docSnap.id });
+        }
+      });
+
+      remoteCategories.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
+
+      CloudState.categories = remoteCategories;
+      renderVitrineCategoryFilters();
+      renderVitrine();
+      renderCmsCategoriesTable();
+      populateProductCategorySelect();
+    },
+    (error) => {
+      showCloudPermissionError('categories', error);
+    }
+  );
+
+  // 3. Ouvinte Contínuo: Coleção Global de Produtos (products)
   onSnapshot(
     productsColRef,
     (snapshot) => {
@@ -850,13 +950,14 @@ function setupRealtimeListeners() {
       CloudState.products = remoteProducts;
       renderVitrine();
       renderCmsProductsTable();
+      renderCmsCategoriesTable();
     },
     (error) => {
       showCloudPermissionError('products', error);
     }
   );
 
-  // 3. Ouvinte Contínuo: Coleção Global de Encomendas Sob Medida (custom_orders)
+  // 4. Ouvinte Contínuo: Coleção Global de Encomendas Sob Medida (custom_orders)
   onSnapshot(
     customOrdersColRef,
     (snapshot) => {
@@ -1121,18 +1222,120 @@ let currentCategoryFilter = 'all';
 let currentSearchTerm = '';
 let currentSortOrder = 'default';
 
+function slugifyCategory(text) {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+function normalizeCategoryText(str) {
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function renderVitrineCategoryFilters() {
+  const container = document.getElementById('categoryFiltersContainer');
+  if (!container) return;
+
+  const categories = Storage.getCategories() || [];
+  const activeCategories = categories.filter(c => c.isActive !== false);
+
+  // Se a categoria selecionada foi desativada ou removida, volta para 'all'
+  if (currentCategoryFilter !== 'all') {
+    const stillActive = activeCategories.some(
+      c => normalizeCategoryText(c.name) === normalizeCategoryText(currentCategoryFilter) ||
+           normalizeCategoryText(c.slug) === normalizeCategoryText(currentCategoryFilter)
+    );
+    if (!stillActive && activeCategories.length > 0) {
+      currentCategoryFilter = 'all';
+    }
+  }
+
+  const isAllActive = currentCategoryFilter === 'all';
+  let html = `
+    <button
+      type="button"
+      onclick="selectVitrineCategory('all')"
+      class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap ${
+        isAllActive
+          ? 'active bg-stone-900 text-white border-stone-900 shadow-sm'
+          : 'bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]'
+      }"
+      data-category="all"
+    >
+      Todos os Modelos
+    </button>
+  `;
+
+  activeCategories.forEach(cat => {
+    const isSelected = normalizeCategoryText(currentCategoryFilter) === normalizeCategoryText(cat.name) ||
+                       normalizeCategoryText(currentCategoryFilter) === normalizeCategoryText(cat.slug);
+    const escapedName = String(cat.name).replace(/'/g, "\\'");
+    const isGold18k = normalizeCategoryText(cat.name).includes('18k') || normalizeCategoryText(cat.name).includes('ouro');
+
+    html += `
+      <button
+        type="button"
+        onclick="selectVitrineCategory('${escapedName}')"
+        class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap ${
+          isSelected
+            ? 'active bg-stone-900 text-white border-stone-900 shadow-sm'
+            : 'bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]'
+        }"
+        data-category="${cat.name}"
+      >
+        ${isGold18k ? '<i class="fas fa-crown text-amber-500 mr-1"></i>' : ''}${cat.name}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function selectVitrineCategory(categoryName) {
+  currentCategoryFilter = categoryName || 'all';
+  renderVitrineCategoryFilters();
+  renderVitrine();
+}
+
 function renderVitrine() {
   const grid = document.getElementById('productGrid');
   const emptyState = document.getElementById('emptyCatalogState');
   if (!grid) return;
 
   const products = Storage.getProducts();
+  const categories = Storage.getCategories() || [];
   const paymentConfig = Storage.getPayment();
 
+  // Identifica categorias explicitamente inativas para não exibir produtos de categorias desativadas quando o filtro estiver em 'all' (ou filtra normalmente)
+  const inactiveNames = new Set(
+    categories.filter(c => c.isActive === false).map(c => normalizeCategoryText(c.name))
+  );
+
   let filtered = products.filter(item => {
-    const matchCategory = currentCategoryFilter === 'all' || item.category === currentCategoryFilter;
+    const itemCatNorm = normalizeCategoryText(item.category);
+    const filterNorm = normalizeCategoryText(currentCategoryFilter);
+
+    // Oculta produtos cuja categoria está marcada como inativa na loja pública
+    if (inactiveNames.has(itemCatNorm)) {
+      return false;
+    }
+
+    const matchCategory =
+      currentCategoryFilter === 'all' ||
+      itemCatNorm === filterNorm ||
+      slugifyCategory(item.category) === slugifyCategory(currentCategoryFilter);
+
     const matchSearch = currentSearchTerm === '' ||
       (item.name && item.name.toLowerCase().includes(currentSearchTerm)) ||
+      (item.category && item.category.toLowerCase().includes(currentSearchTerm)) ||
       (item.material && item.material.toLowerCase().includes(currentSearchTerm)) ||
       (item.tag && item.tag.toLowerCase().includes(currentSearchTerm)) ||
       (item.description && item.description.toLowerCase().includes(currentSearchTerm));
@@ -1209,18 +1412,10 @@ function resetFilters() {
   if (searchInput) searchInput.value = '';
   document.getElementById('clearSearchBtn')?.classList.add('hidden');
 
-  document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.classList.remove('bg-stone-900', 'text-white', 'border-stone-900');
-    btn.classList.add('bg-white', 'text-stone-700', 'border-stone-200');
-    if (btn.dataset.category === 'all') {
-      btn.classList.add('bg-stone-900', 'text-white', 'border-stone-900');
-      btn.classList.remove('bg-white', 'text-stone-700');
-    }
-  });
-
   const sortSelect = document.getElementById('sortSelect');
   if (sortSelect) sortSelect.value = 'default';
 
+  renderVitrineCategoryFilters();
   renderVitrine();
 }
 
@@ -2846,6 +3041,8 @@ function openCmsModal() {
   applyContentToDOM(Storage.getContent());
   applyPaymentConfigToDOM(Storage.getPayment());
   renderCmsProductsTable();
+  renderCmsCategoriesTable();
+  populateProductCategorySelect();
   renderCmsAtelieOrders();
   switchCmsTab('cmsTabTheme');
 }
@@ -3000,6 +3197,11 @@ async function restoreDefaultSettings() {
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
+      for (const cat of INITIAL_CATEGORIES) {
+        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id);
+        await setDoc(catDocRef, cat, { merge: true });
+      }
+
       for (const prod of INITIAL_PRODUCTS) {
         const prodDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', prod.id);
         await setDoc(prodDocRef, prod, { merge: true });
@@ -3056,6 +3258,49 @@ function renderCmsProductsTable() {
   `).join('');
 }
 
+function populateProductCategorySelect(selectedCategoryValue = '') {
+  const select = document.getElementById('crudProductCategory');
+  if (!select) return;
+
+  const categories = Storage.getCategories() || [];
+  const currentVal = selectedCategoryValue || select.value || '';
+
+  if (categories.length === 0) {
+    // Fallback caso todas as categorias tenham sido removidas
+    select.innerHTML = '<option value="Sem Categoria">Sem Categoria (Cadastre na aba Categorias)</option>';
+    return;
+  }
+
+  const visibleCategories = categories.filter(
+    c => c.isActive !== false || normalizeCategoryText(c.name) === normalizeCategoryText(currentVal)
+  );
+
+  let html = '';
+  visibleCategories.forEach(cat => {
+    const isInactive = cat.isActive === false;
+    html += `<option value="${cat.name}">${cat.name}${isInactive ? ' (Inativa)' : ''}</option>`;
+  });
+
+  // Se o produto sendo editado possui uma categoria que não está na lista, preserva na opção
+  if (
+    currentVal &&
+    !visibleCategories.some(c => normalizeCategoryText(c.name) === normalizeCategoryText(currentVal))
+  ) {
+    html += `<option value="${currentVal}">${currentVal}</option>`;
+  }
+
+  select.innerHTML = html;
+
+  if (currentVal) {
+    const matched = Array.from(select.options).find(
+      opt => normalizeCategoryText(opt.value) === normalizeCategoryText(currentVal)
+    );
+    if (matched) {
+      select.value = matched.value;
+    }
+  }
+}
+
 function openProductFormModal(isEdit = false) {
   const modal = document.getElementById('productFormModal');
   if (modal) {
@@ -3072,6 +3317,7 @@ function openProductFormModal(isEdit = false) {
     document.getElementById('productFormTitle').innerText = 'Adicionar Nova Joia';
     document.getElementById('productCrudForm').reset();
     document.getElementById('crudProductId').value = '';
+    populateProductCategorySelect();
   }
 }
 
@@ -3135,6 +3381,7 @@ function editProduct(productId) {
   document.getElementById('productFormTitle').innerText = 'Editar Joia';
   document.getElementById('crudProductId').value = product.id;
   document.getElementById('crudProductName').value = product.name;
+  populateProductCategorySelect(product.category);
   document.getElementById('crudProductCategory').value = product.category;
   document.getElementById('crudProductPrice').value = product.price;
   document.getElementById('crudProductImage').value = product.image;
@@ -3231,6 +3478,511 @@ async function deleteProduct(productId) {
     showToast('Joia excluída globalmente do banco em nuvem.');
   } catch (error) {
     showCloudPermissionError('Excluir Joia do Catálogo', error);
+  }
+}
+
+// ================= 15B. GESTOR DE CATEGORIAS EM NUVEM (PADRÃO JVMODAS) =================
+let currentCategoryAdminSearch = '';
+let categoryFormIsActive = true;
+let categoryIdPendingDelete = null;
+
+function getCategoryProductCount(cat) {
+  if (!cat) return 0;
+  const products = Storage.getProducts() || [];
+  const catNameNorm = normalizeCategoryText(cat.name);
+  const catSlugNorm = normalizeCategoryText(cat.slug);
+  return products.filter(p => {
+    const pCatNorm = normalizeCategoryText(p.category);
+    const pSlugNorm = slugifyCategory(p.category);
+    return p.categoryId === cat.id || pCatNorm === catNameNorm || pSlugNorm === catSlugNorm;
+  }).length;
+}
+
+function renderCmsCategoriesTable() {
+  const categories = Storage.getCategories() || [];
+  const tbody = document.getElementById('cmsCategoriesTableBody');
+
+  // Atualiza badge na aba "Categorias"
+  const tabBadge = document.getElementById('cmsTabCategoriesCountBadge');
+  if (tabBadge) tabBadge.innerText = categories.length;
+
+  // Calcula contadores de resumo (idêntico ao JVMODAS)
+  const totalCategories = categories.length;
+  const activeCategoriesCount = categories.filter(c => c.isActive !== false).length;
+  const totalProductsLinked = categories.reduce((acc, c) => acc + getCategoryProductCount(c), 0);
+
+  const statTotalEl = document.getElementById('catStatTotal');
+  const statActiveEl = document.getElementById('catStatActive');
+  const statLinkedEl = document.getElementById('catStatLinkedProducts');
+
+  if (statTotalEl) statTotalEl.innerText = totalCategories;
+  if (statActiveEl) statActiveEl.innerText = activeCategoriesCount;
+  if (statLinkedEl) statLinkedEl.innerText = totalProductsLinked;
+
+  // Filtra categorias pela busca
+  const term = currentCategoryAdminSearch.trim().toLowerCase();
+  const filtered = !term
+    ? categories
+    : categories.filter(c =>
+        String(c.name || '').toLowerCase().includes(term) ||
+        String(c.slug || '').toLowerCase().includes(term) ||
+        String(c.description || '').toLowerCase().includes(term)
+      );
+
+  const showingEl = document.getElementById('catFilterShowingCount');
+  const totalEl = document.getElementById('catFilterTotalCount');
+  if (showingEl) showingEl.innerText = filtered.length;
+  if (totalEl) totalEl.innerText = totalCategories;
+
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="py-10 px-4 text-center text-stone-400">
+          <div class="max-w-sm mx-auto space-y-1.5">
+            <i class="fas fa-sitemap text-2xl text-stone-300 block mb-1"></i>
+            <p class="font-semibold text-stone-700 text-xs">Nenhuma categoria encontrada</p>
+            <p class="text-[11px] text-stone-400">
+              ${term
+                ? `Nenhum resultado corresponde à busca "${currentCategoryAdminSearch}".`
+                : 'Comece cadastrando sua primeira categoria no botão "+ Nova Categoria" acima.'}
+            </p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(cat => {
+    const productCount = getCategoryProductCount(cat);
+    const isActive = cat.isActive !== false;
+    const slug = cat.slug || slugifyCategory(cat.name);
+
+    return `
+      <tr class="hover:bg-stone-50/90 transition group" data-category-row="${cat.id}">
+        <!-- Nome & Descrição -->
+        <td class="py-3.5 px-4">
+          <div class="space-y-0.5">
+            <span class="font-bold text-stone-900 text-xs sm:text-sm group-hover:text-[#C5A059] transition-colors block">
+              ${cat.name}
+            </span>
+            ${cat.description ? `<p class="text-[11px] text-stone-500 line-clamp-1 max-w-md">${cat.description}</p>` : ''}
+          </div>
+        </td>
+
+        <!-- Slug (URL) -->
+        <td class="py-3.5 px-4">
+          <span class="inline-flex items-center gap-1.5 font-mono text-[11px] bg-stone-100 border border-stone-200 text-stone-700 px-2.5 py-1 rounded-md">
+            <i class="fas fa-tag text-[10px] text-[#C5A059]"></i>
+            /${slug}
+          </span>
+        </td>
+
+        <!-- Qtd. Joias Vinculadas -->
+        <td class="py-3.5 px-4 text-center">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+            productCount > 0
+              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+              : 'bg-stone-100 text-stone-500 border border-stone-200'
+          }">
+            <i class="fas fa-gem text-[10px] ${productCount > 0 ? 'text-[#C5A059]' : 'text-stone-400'}"></i>
+            ${productCount} ${productCount === 1 ? 'joia' : 'joias'}
+          </span>
+        </td>
+
+        <!-- Status com Switch Rápido -->
+        <td class="py-3.5 px-4 text-center">
+          <button
+            type="button"
+            onclick="toggleCategoryStatus('${cat.id}')"
+            title="${isActive ? 'Clique para desativar' : 'Clique para ativar'}"
+            class="inline-flex items-center gap-2 text-xs font-bold transition-all cursor-pointer"
+          >
+            <div class="w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+              isActive ? 'bg-emerald-600' : 'bg-stone-300'
+            }">
+              <div class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                isActive ? 'translate-x-5' : 'translate-x-0'
+              }"></div>
+            </div>
+            <span class="text-[11px] font-semibold ${isActive ? 'text-emerald-700' : 'text-stone-400'}">
+              ${isActive ? 'Ativa' : 'Inativa'}
+            </span>
+          </button>
+        </td>
+
+        <!-- Ações -->
+        <td class="py-3.5 px-4 text-right">
+          <div class="flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onclick="editCategory('${cat.id}')"
+              title="Editar Categoria"
+              class="p-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-900 border border-stone-200 transition"
+            >
+              <i class="fas fa-edit text-xs"></i>
+            </button>
+            <button
+              type="button"
+              onclick="openCategoryDeleteModal('${cat.id}')"
+              title="Excluir Categoria"
+              class="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition"
+            >
+              <i class="fas fa-trash-alt text-xs"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function handleCategorySearchInput(event) {
+  currentCategoryAdminSearch = event?.target?.value || '';
+  const clearBtn = document.getElementById('cmsCategorySearchClearBtn');
+  if (clearBtn) {
+    if (currentCategoryAdminSearch.trim()) clearBtn.classList.remove('hidden');
+    else clearBtn.classList.add('hidden');
+  }
+  renderCmsCategoriesTable();
+}
+
+function clearCategorySearch() {
+  currentCategoryAdminSearch = '';
+  const input = document.getElementById('cmsCategorySearchInput');
+  if (input) input.value = '';
+  document.getElementById('cmsCategorySearchClearBtn')?.classList.add('hidden');
+  renderCmsCategoriesTable();
+}
+
+function syncCategoryFormToggleUI() {
+  const track = document.getElementById('crudCategoryActiveTrack');
+  const thumb = document.getElementById('crudCategoryActiveThumb');
+  if (!track || !thumb) return;
+
+  if (categoryFormIsActive) {
+    track.className = 'w-11 h-6 flex items-center rounded-full p-1 transition-colors bg-emerald-600';
+    thumb.className = 'bg-white w-4 h-4 rounded-full shadow-md transform transition-transform translate-x-5';
+  } else {
+    track.className = 'w-11 h-6 flex items-center rounded-full p-1 transition-colors bg-stone-300';
+    thumb.className = 'bg-white w-4 h-4 rounded-full shadow-md transform transition-transform translate-x-0';
+  }
+}
+
+function toggleCategoryFormActiveState() {
+  categoryFormIsActive = !categoryFormIsActive;
+  syncCategoryFormToggleUI();
+}
+
+function validateCategoryNameAndSlug(rawName, editingId = '') {
+  const trimmed = String(rawName || '').trim();
+  if (!trimmed) return null;
+  if (trimmed.length < 2) return 'O nome da categoria deve ter no mínimo 2 caracteres.';
+  if (trimmed.length > 60) return 'O nome da categoria não pode exceder 60 caracteres.';
+
+  const computedSlug = slugifyCategory(trimmed);
+  if (!computedSlug) return 'O nome informado não gerou um slug válido.';
+
+  const categories = Storage.getCategories() || [];
+  const nameDuplicate = categories.some(c => {
+    if (editingId && c.id === editingId) return false;
+    return String(c.name || '').trim().toLowerCase() === trimmed.toLowerCase();
+  });
+  if (nameDuplicate) {
+    return 'Já existe uma categoria cadastrada com este nome.';
+  }
+
+  const slugDuplicate = categories.some(c => {
+    if (editingId && c.id === editingId) return false;
+    return (c.slug || slugifyCategory(c.name)) === computedSlug;
+  });
+  if (slugDuplicate) {
+    return 'O slug gerado já está em uso por outra categoria.';
+  }
+
+  return null;
+}
+
+function handleCategoryNameInput(event) {
+  const val = event?.target?.value || '';
+  const editingId = document.getElementById('crudCategoryId')?.value || '';
+  const slugRow = document.getElementById('crudCategorySlugPreviewRow');
+  const slugPreview = document.getElementById('crudCategorySlugPreview');
+  const errorEl = document.getElementById('crudCategoryValidationError');
+  const errorTextEl = document.getElementById('crudCategoryValidationErrorText');
+  const submitBtn = document.getElementById('crudCategorySubmitBtn');
+
+  const computedSlug = slugifyCategory(val);
+  if (val.trim() && slugRow && slugPreview) {
+    slugRow.classList.remove('hidden');
+    slugPreview.innerText = `/${computedSlug}`;
+  } else if (slugRow) {
+    slugRow.classList.add('hidden');
+  }
+
+  const validationError = val.trim() ? validateCategoryNameAndSlug(val, editingId) : null;
+  if (validationError && errorEl && errorTextEl) {
+    errorTextEl.innerText = validationError;
+    errorEl.classList.remove('hidden');
+    if (submitBtn) submitBtn.disabled = true;
+  } else {
+    if (errorEl) errorEl.classList.add('hidden');
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+function openCategoryFormModal(isEdit = false) {
+  const modal = document.getElementById('categoryFormModal');
+  if (!isEdit) {
+    document.getElementById('categoryCrudForm')?.reset();
+    document.getElementById('crudCategoryId').value = '';
+    document.getElementById('categoryFormBadge').innerText = 'Nova Categoria';
+    document.getElementById('categoryFormTitle').innerText = 'Cadastrar Nova Categoria';
+    document.getElementById('crudCategorySubmitBtn').innerText = 'Salvar Categoria';
+    document.getElementById('crudCategorySlugPreviewRow')?.classList.add('hidden');
+    document.getElementById('crudCategoryValidationError')?.classList.add('hidden');
+    document.getElementById('crudCategorySubmitBtn').disabled = false;
+    categoryFormIsActive = true;
+    syncCategoryFormToggleUI();
+  }
+
+  if (modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.firstElementChild?.classList.remove('scale-95');
+    }, 10);
+  }
+}
+
+function closeCategoryFormModal() {
+  const modal = document.getElementById('categoryFormModal');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    modal.firstElementChild?.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+  }
+}
+
+function editCategory(categoryId) {
+  const categories = Storage.getCategories() || [];
+  const cat = categories.find(c => c.id === categoryId);
+  if (!cat) return;
+
+  document.getElementById('crudCategoryId').value = cat.id;
+  document.getElementById('crudCategoryName').value = cat.name || '';
+  document.getElementById('crudCategoryDescription').value = cat.description || '';
+  document.getElementById('categoryFormBadge').innerText = 'Editar Categoria';
+  document.getElementById('categoryFormTitle').innerText = `Editar "${cat.name}"`;
+  document.getElementById('crudCategorySubmitBtn').innerText = 'Atualizar Categoria';
+
+  categoryFormIsActive = cat.isActive !== false;
+  syncCategoryFormToggleUI();
+
+  const slugRow = document.getElementById('crudCategorySlugPreviewRow');
+  const slugPreview = document.getElementById('crudCategorySlugPreview');
+  if (slugRow && slugPreview) {
+    slugRow.classList.remove('hidden');
+    slugPreview.innerText = `/${cat.slug || slugifyCategory(cat.name)}`;
+  }
+  document.getElementById('crudCategoryValidationError')?.classList.add('hidden');
+  document.getElementById('crudCategorySubmitBtn').disabled = false;
+
+  openCategoryFormModal(true);
+}
+
+async function handleCategoryFormSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const editingId = document.getElementById('crudCategoryId').value.trim();
+  const rawName = document.getElementById('crudCategoryName').value;
+  const trimmedName = String(rawName || '').trim();
+  const description = document.getElementById('crudCategoryDescription').value.trim();
+
+  const validationError = validateCategoryNameAndSlug(trimmedName, editingId);
+  if (validationError) {
+    const errorEl = document.getElementById('crudCategoryValidationError');
+    const errorTextEl = document.getElementById('crudCategoryValidationErrorText');
+    if (errorEl && errorTextEl) {
+      errorTextEl.innerText = validationError;
+      errorEl.classList.remove('hidden');
+    }
+    showToast(validationError, 'fa-exclamation-triangle');
+    return;
+  }
+
+  const slug = slugifyCategory(trimmedName);
+  const id = editingId || `cat-${slug}-${Date.now().toString(36)}`;
+  const existingCat = editingId ? (Storage.getCategories() || []).find(c => c.id === editingId) : null;
+  const previousName = existingCat ? existingCat.name : null;
+
+  const payload = {
+    id,
+    name: trimmedName,
+    slug,
+    description: description || '',
+    isActive: Boolean(categoryFormIsActive),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (!editingId) {
+    payload.createdAt = new Date().toISOString();
+  }
+
+  const submitBtn = document.getElementById('crudCategorySubmitBtn');
+  const originalText = submitBtn ? submitBtn.innerHTML : 'Salvar Categoria';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Salvando...';
+  }
+
+  try {
+    ensureCloudAuthenticated();
+    const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', id);
+    await setDoc(catDocRef, payload, { merge: true });
+
+    // Se o nome da categoria foi alterado, atualiza automaticamente as joias vinculadas na nuvem para manter a integridade
+    if (editingId && previousName && previousName !== trimmedName) {
+      const products = Storage.getProducts() || [];
+      const linkedProducts = products.filter(
+        p => normalizeCategoryText(p.category) === normalizeCategoryText(previousName)
+      );
+      for (const prod of linkedProducts) {
+        const prodRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', prod.id);
+        await updateDoc(prodRef, {
+          category: trimmedName,
+          updatedAt: new Date().toISOString()
+        });
+      }
+      if (normalizeCategoryText(currentCategoryFilter) === normalizeCategoryText(previousName)) {
+        currentCategoryFilter = trimmedName;
+      }
+    }
+
+    closeCategoryFormModal();
+    showToast(
+      editingId
+        ? `Categoria "${trimmedName}" atualizada com sucesso na nuvem!`
+        : `Categoria "${trimmedName}" criada com sucesso na nuvem!`
+    );
+  } catch (error) {
+    showCloudPermissionError('Salvar Categoria', error);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  }
+}
+
+async function toggleCategoryStatus(categoryId) {
+  const categories = Storage.getCategories() || [];
+  const cat = categories.find(c => c.id === categoryId);
+  if (!cat) return;
+
+  const newStatus = cat.isActive === false ? true : false;
+
+  try {
+    ensureCloudAuthenticated();
+    const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', categoryId);
+    await updateDoc(catDocRef, {
+      isActive: newStatus,
+      updatedAt: new Date().toISOString()
+    });
+    showToast(`Categoria "${cat.name}" ${newStatus ? 'ativada' : 'desativada'} com sucesso.`);
+  } catch (error) {
+    showCloudPermissionError('Alternar Status da Categoria', error);
+  }
+}
+
+function openCategoryDeleteModal(categoryId) {
+  const categories = Storage.getCategories() || [];
+  const cat = categories.find(c => c.id === categoryId);
+  if (!cat) return;
+
+  categoryIdPendingDelete = cat.id;
+  const productCount = getCategoryProductCount(cat);
+
+  const blockedView = document.getElementById('categoryDeleteBlockedView');
+  const confirmView = document.getElementById('categoryDeleteConfirmView');
+
+  if (productCount > 0) {
+    // CASO A: Bloqueio por Integridade Referencial
+    blockedView?.classList.remove('hidden');
+    confirmView?.classList.add('hidden');
+    const nameEl = document.getElementById('categoryDeleteBlockedName');
+    const countEl = document.getElementById('categoryDeleteBlockedCount');
+    if (nameEl) nameEl.innerText = `"${cat.name}"`;
+    if (countEl) countEl.innerText = `${productCount} ${productCount === 1 ? 'joia' : 'joias'}`;
+  } else {
+    // CASO B: Exclusão permitida
+    blockedView?.classList.add('hidden');
+    confirmView?.classList.remove('hidden');
+    const nameEl = document.getElementById('categoryDeleteConfirmName');
+    if (nameEl) nameEl.innerText = `"${cat.name}"`;
+  }
+
+  const modal = document.getElementById('categoryDeleteModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.firstElementChild?.classList.remove('scale-95');
+    }, 10);
+  }
+}
+
+function closeCategoryDeleteModal() {
+  categoryIdPendingDelete = null;
+  const modal = document.getElementById('categoryDeleteModal');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    modal.firstElementChild?.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+  }
+}
+
+async function confirmDeleteCategory() {
+  if (!categoryIdPendingDelete) return;
+  const categories = Storage.getCategories() || [];
+  const cat = categories.find(c => c.id === categoryIdPendingDelete);
+  if (!cat) {
+    closeCategoryDeleteModal();
+    return;
+  }
+
+  const productCount = getCategoryProductCount(cat);
+  if (productCount > 0) {
+    showToast(
+      `Exclusão bloqueada: "${cat.name}" possui ${productCount} joia(s) vinculada(s).`,
+      'fa-exclamation-triangle'
+    );
+    closeCategoryDeleteModal();
+    return;
+  }
+
+  const btn = document.getElementById('confirmDeleteCategoryBtn');
+  const originalHtml = btn ? btn.innerHTML : 'Confirmar Exclusão';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Excluindo...';
+  }
+
+  try {
+    ensureCloudAuthenticated();
+    const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id);
+    await deleteDoc(catDocRef);
+    closeCategoryDeleteModal();
+    showToast(`Categoria "${cat.name}" excluída permanentemente da nuvem!`);
+  } catch (error) {
+    showCloudPermissionError('Excluir Categoria', error);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
   }
 }
 
@@ -3499,10 +4251,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 9. Listeners do Ateliê Sob Medida (handleCustomOrderSubmit)
   document.getElementById('atelieForm')?.addEventListener('submit', handleCustomOrderSubmit);
 
-  // 10. Listeners do CMS (handleProductFormSubmit)
+  // 10. Listeners do CMS (handleProductFormSubmit & handleCategoryFormSubmit)
   document.getElementById('cmsAuthForm')?.addEventListener('submit', submitCmsPassword);
   document.getElementById('togglePasswordVisibilityBtn')?.addEventListener('click', togglePasswordVisibility);
   document.getElementById('productCrudForm')?.addEventListener('submit', handleProductFormSubmit);
+  document.getElementById('categoryCrudForm')?.addEventListener('submit', handleCategoryFormSubmit);
 
   // 11. Menu Mobile
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');

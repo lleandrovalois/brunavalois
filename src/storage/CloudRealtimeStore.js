@@ -138,6 +138,57 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
+const INITIAL_CATEGORIES = [
+  {
+    id: 'cat-colares',
+    name: 'Colares',
+    slug: 'colares',
+    description: 'Rivieras, gargantilhas, chokers e colares de alta joalheria.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:01.000Z'
+  },
+  {
+    id: 'cat-brincos',
+    name: 'Brincos',
+    slug: 'brincos',
+    description: 'Brincos clássicos, ear cuffs e cascatas cravejadas.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:02.000Z'
+  },
+  {
+    id: 'cat-aneis',
+    name: 'Anéis',
+    slug: 'aneis',
+    description: 'Solitários, aparadores e anéis autorais em Ouro 18k e gemas naturais.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:03.000Z'
+  },
+  {
+    id: 'cat-pulseiras',
+    name: 'Pulseiras',
+    slug: 'pulseiras',
+    description: 'Pulseiras tênis, braceletes rígidos e malhas nobres.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:04.000Z'
+  },
+  {
+    id: 'cat-aliancas',
+    name: 'Alianças',
+    slug: 'aliancas',
+    description: 'Alianças de casamento, noivado e bodas sob medida.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:05.000Z'
+  },
+  {
+    id: 'cat-ouro-18k',
+    name: 'Coleção Ouro 18k',
+    slug: 'colecao-ouro-18k',
+    description: 'Peças exclusivas confeccionadas em Ouro 18k (750) maciço.',
+    isActive: true,
+    createdAt: '2026-10-28T09:00:06.000Z'
+  }
+];
+
 const INITIAL_CUSTOM_ORDERS = [
   {
     id: 'AT-8912',
@@ -273,18 +324,41 @@ class CloudRealtimeStore {
     let modified = false;
     const base = `/artifacts/${appId}/public/data`;
     const configColPath = `${base}/site_config`;
+    const categoriesColPath = `${base}/categories`;
     const productsColPath = `${base}/products`;
     const ordersColPath = `${base}/custom_orders`;
 
     const existingMain = this.collections[configColPath] && this.collections[configColPath]['main'];
     const alreadySeeded = Boolean(existingMain);
+    const categoriesAlreadySeeded = Boolean(existingMain && existingMain.categoriesSeeded);
 
     if (!existingMain) {
       if (!this.collections[configColPath]) this.collections[configColPath] = {};
-      this.collections[configColPath]['main'] = JSON.parse(JSON.stringify(DEFAULT_SITE_CONFIG));
+      this.collections[configColPath]['main'] = {
+        ...JSON.parse(JSON.stringify(DEFAULT_SITE_CONFIG)),
+        categoriesSeeded: true
+      };
       modified = true;
-    } else if (!existingMain.initialSeedCompleted) {
-      existingMain.initialSeedCompleted = true;
+    } else {
+      if (!existingMain.initialSeedCompleted) {
+        existingMain.initialSeedCompleted = true;
+        modified = true;
+      }
+      if (!existingMain.categoriesSeeded) {
+        existingMain.categoriesSeeded = true;
+        modified = true;
+      }
+    }
+
+    // Popula categorias iniciais apenas se o módulo de categorias ainda não foi inicializado
+    if (!categoriesAlreadySeeded && !this.collections[categoriesColPath]) {
+      this.collections[categoriesColPath] = {};
+      for (const cat of INITIAL_CATEGORIES) {
+        this.collections[categoriesColPath][cat.id] = { ...cat };
+      }
+      modified = true;
+    } else if (!this.collections[categoriesColPath]) {
+      this.collections[categoriesColPath] = {};
       modified = true;
     }
 
@@ -478,12 +552,21 @@ class CloudRealtimeStore {
   resetToDefaults(appId = DEFAULT_APP_ID) {
     const base = `/artifacts/${appId}/public/data`;
     const configColPath = `${base}/site_config`;
+    const categoriesColPath = `${base}/categories`;
     const productsColPath = `${base}/products`;
     const ordersColPath = `${base}/custom_orders`;
 
     this.collections[configColPath] = {
-      main: JSON.parse(JSON.stringify(DEFAULT_SITE_CONFIG))
+      main: {
+        ...JSON.parse(JSON.stringify(DEFAULT_SITE_CONFIG)),
+        categoriesSeeded: true
+      }
     };
+
+    this.collections[categoriesColPath] = {};
+    for (const cat of INITIAL_CATEGORIES) {
+      this.collections[categoriesColPath][cat.id] = { ...cat };
+    }
 
     this.collections[productsColPath] = {};
     for (const prod of INITIAL_PRODUCTS) {
@@ -498,6 +581,7 @@ class CloudRealtimeStore {
     this._save();
 
     this._broadcastChange(appId, configColPath, 'site_config', 'main');
+    this._broadcastChange(appId, categoriesColPath, 'categories', null);
     this._broadcastChange(appId, productsColPath, 'products', null);
     this._broadcastChange(appId, ordersColPath, 'custom_orders', null);
 
@@ -533,6 +617,7 @@ class CloudRealtimeStore {
 
     const base = `/artifacts/${appId}/public/data`;
     const configDoc = this.getDoc(`${base}/site_config/main`);
+    const categoriesCol = this.getDocs(`${base}/categories`);
     const productsCol = this.getDocs(`${base}/products`);
     const ordersCol = this.getDocs(`${base}/custom_orders`);
 
@@ -542,6 +627,15 @@ class CloudRealtimeStore {
       id: 'main',
       exists: configDoc.exists,
       data: configDoc.data,
+      timestamp: Date.now()
+    });
+
+    this._writeSseEvent(client.res, 'snapshot', {
+      kind: 'collection',
+      path: `${base}/categories`,
+      empty: categoriesCol.empty,
+      size: categoriesCol.size,
+      docs: categoriesCol.docs,
       timestamp: Date.now()
     });
 

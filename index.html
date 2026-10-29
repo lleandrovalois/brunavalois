@@ -44,7 +44,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="styles.css?v=20261029-realtime-v4">
+  <link rel="stylesheet" href="styles.css?v=20261029-realtime-v5">
 </head>
 <body class="antialiased selection:bg-[#C5A059] selection:text-white">
 
@@ -271,25 +271,10 @@
         </div>
       </div>
 
-      <!-- Filtros por Categoria -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs sm:text-sm font-medium">
-        <button class="category-btn active px-4 py-2 rounded-full border transition whitespace-nowrap bg-stone-900 text-white border-stone-900" data-category="all">
+      <!-- Filtros por Categoria (Sincronizados dinamicamente via Gestor de Categorias em Nuvem) -->
+      <div id="categoryFiltersContainer" class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs sm:text-sm font-medium">
+        <button class="category-btn active px-4 py-2 rounded-full border transition whitespace-nowrap bg-stone-900 text-white border-stone-900" data-category="all" onclick="selectVitrineCategory('all')">
           Todos os Modelos
-        </button>
-        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Colares">
-          Colares & Chokers
-        </button>
-        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Brincos">
-          Brincos Finos
-        </button>
-        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Anéis">
-          Anéis & Solitários
-        </button>
-        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Pulseiras">
-          Pulseiras & Braceletes
-        </button>
-        <button class="category-btn px-4 py-2 rounded-full border transition whitespace-nowrap bg-white text-stone-700 border-stone-200 hover:border-[#C5A059]" data-category="Coleção Ouro 18k">
-          <i class="fas fa-crown text-amber-500 mr-1"></i> Coleção Ouro 18k
         </button>
       </div>
     </div>
@@ -1857,7 +1842,7 @@
 
       <!-- Abas de Navegação do CMS (Segmented Control Responsivo) -->
       <div class="px-4 sm:px-6 py-3 bg-stone-50 border-b border-stone-200 flex-shrink-0">
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 bg-stone-200/60 rounded-xl text-xs font-semibold">
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 p-1 bg-stone-200/60 rounded-xl text-xs font-semibold">
           <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 active bg-white text-stone-950 shadow-sm border border-stone-200" data-tab="cmsTabTheme">
             <i class="fas fa-palette text-[#C5A059]"></i> <span>Temas</span>
           </button>
@@ -1870,7 +1855,11 @@
           <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabProducts">
             <i class="fas fa-gem text-stone-400"></i> <span>Catálogo</span>
           </button>
-          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900 col-span-2 sm:col-span-1" data-tab="cmsTabAtelie">
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabCategories">
+            <i class="fas fa-sitemap text-stone-400"></i> <span>Categorias</span>
+            <span id="cmsTabCategoriesCountBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-stone-200/90 text-stone-700 font-bold">0</span>
+          </button>
+          <button class="cms-nav-tab py-2.5 px-3 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-stone-600 hover:text-stone-900" data-tab="cmsTabAtelie">
             <i class="fas fa-inbox text-stone-400"></i> <span>Encomendas</span>
           </button>
         </div>
@@ -2091,17 +2080,22 @@
 
         <!-- ================= ABA 4: CRUD DE PRODUTOS ================= -->
         <div id="cmsTabProducts" class="cms-tab-content hidden space-y-4">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
               <h4 class="font-heading font-semibold text-stone-900 text-base">Gerenciador de Joias & Catálogo</h4>
               <p class="text-xs text-stone-500">Adicione, edite e organize as peças da sua vitrine:</p>
             </div>
-            <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition">
-              <i class="fas fa-plus"></i> Nova Joia
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="switchCmsTab('cmsTabCategories')" class="px-3.5 py-2 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fas fa-sitemap text-[#C5A059]"></i> Categorias
+              </button>
+              <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition">
+                <i class="fas fa-plus"></i> Nova Joia
+              </button>
+            </div>
           </div>
 
-          <div class="overflow-x-auto border border-stone-200 rounded-2xl">
+          <div class="overflow-x-auto border border-stone-200 rounded-2xl bg-white">
             <table class="w-full text-left text-xs text-stone-700">
               <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 uppercase font-semibold">
                 <tr>
@@ -2116,6 +2110,106 @@
                 <!-- Preenchido dinamicamente via app.js -->
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ================= ABA 5: GESTOR DE CATEGORIAS (PADRÃO JVMODAS) ================= -->
+        <div id="cmsTabCategories" class="cms-tab-content hidden space-y-5">
+          <!-- Cabeçalho e Ação -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <i class="fas fa-sitemap text-[#C5A059] text-lg"></i>
+                <h4 class="font-heading font-bold text-stone-900 text-lg">Gestão de Categorias</h4>
+              </div>
+              <p class="text-xs text-stone-500 mt-0.5">
+                Cadastre, edite e gerencie as categorias do catálogo com regras de integridade referencial e revalidação instantânea na nuvem.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openCategoryFormModal()" class="px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold uppercase tracking-wider shadow-md flex items-center gap-2 transition active:scale-95">
+                <i class="fas fa-plus text-[#C5A059]"></i>
+                <span>Nova Categoria</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cards de Resumo Rápido -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div class="bg-white border border-stone-200 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+              <div class="w-11 h-11 rounded-xl bg-stone-900 text-[#C5A059] flex items-center justify-center shrink-0">
+                <i class="fas fa-sitemap text-base"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Total de Categorias</span>
+                <span id="catStatTotal" class="text-xl font-heading font-bold text-stone-900">0</span>
+              </div>
+            </div>
+
+            <div class="bg-white border border-stone-200 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+              <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                <i class="fas fa-check-circle text-base"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Categorias Ativas</span>
+                <span id="catStatActive" class="text-xl font-heading font-bold text-emerald-600">0</span>
+              </div>
+            </div>
+
+            <div class="bg-white border border-stone-200 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+              <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-[#C5A059] flex items-center justify-center shrink-0">
+                <i class="fas fa-gem text-base"></i>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Joias Vinculadas</span>
+                <span id="catStatLinkedProducts" class="text-xl font-heading font-bold text-stone-900">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Ferramentas e Busca -->
+          <div class="bg-white border border-stone-200 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+            <div class="relative w-full sm:w-80">
+              <i class="fas fa-search text-stone-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input
+                type="text"
+                id="cmsCategorySearchInput"
+                oninput="handleCategorySearchInput(event)"
+                placeholder="Buscar categoria por nome ou slug..."
+                class="w-full pl-9 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-[#C5A059]"
+              >
+              <button
+                type="button"
+                id="cmsCategorySearchClearBtn"
+                onclick="clearCategorySearch()"
+                class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs"
+              >
+                <i class="fas fa-times-circle"></i>
+              </button>
+            </div>
+            <div class="text-xs text-stone-500 font-medium">
+              Exibindo <strong id="catFilterShowingCount" class="text-stone-900">0</strong> de <strong id="catFilterTotalCount" class="text-stone-900">0</strong> categorias
+            </div>
+          </div>
+
+          <!-- Tabela de Listagem de Categorias -->
+          <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-stone-700">
+                <thead class="bg-stone-50 border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  <tr>
+                    <th class="py-3.5 px-4">Categoria</th>
+                    <th class="py-3.5 px-4">Slug (URL)</th>
+                    <th class="py-3.5 px-4 text-center">Joias</th>
+                    <th class="py-3.5 px-4 text-center">Status</th>
+                    <th class="py-3.5 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="cmsCategoriesTableBody" class="divide-y divide-stone-100">
+                  <!-- Preenchido dinamicamente via app.js -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -2171,12 +2265,18 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-stone-700 mb-1">Categoria *</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block font-medium text-stone-700">Categoria *</label>
+              <button type="button" onclick="closeProductFormModal(); switchCmsTab('cmsTabCategories');" class="text-[10px] text-[#C5A059] hover:underline font-semibold inline-flex items-center gap-1">
+                <i class="fas fa-sitemap"></i> Gerenciar
+              </button>
+            </div>
             <select id="crudProductCategory" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]">
               <option value="Colares">Colares</option>
               <option value="Brincos">Brincos</option>
               <option value="Anéis">Anéis</option>
               <option value="Pulseiras">Pulseiras</option>
+              <option value="Alianças">Alianças</option>
               <option value="Coleção Ouro 18k">Coleção Ouro 18k</option>
             </select>
           </div>
@@ -2225,6 +2325,152 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL CRIAR / EDITAR CATEGORIA (PADRÃO JVMODAS) ================= -->
+  <div id="categoryFormModal" class="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[85] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white cms-window rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto p-6 space-y-5 text-stone-900">
+      <div class="flex justify-between items-start pb-3 border-b border-stone-200">
+        <div>
+          <div class="flex items-center gap-1.5 text-[#C5A059] text-[11px] font-bold uppercase tracking-wider mb-0.5">
+            <i class="fas fa-sitemap"></i>
+            <span id="categoryFormBadge">Nova Categoria</span>
+          </div>
+          <h3 id="categoryFormTitle" class="font-heading font-bold text-lg text-stone-900">Cadastrar Nova Categoria</h3>
+          <p class="text-[11px] text-stone-500 mt-0.5">O slug será gerado automaticamente a partir do nome e servirá para os filtros da vitrine.</p>
+        </div>
+        <button type="button" onclick="closeCategoryFormModal()" class="text-stone-400 hover:text-stone-700 text-lg p-1">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="categoryCrudForm" class="space-y-4 text-xs">
+        <input type="hidden" id="crudCategoryId">
+
+        <!-- Nome da Categoria -->
+        <div class="space-y-1.5">
+          <label class="block font-bold text-stone-700 uppercase tracking-wider text-[11px]">
+            Nome da Categoria <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="crudCategoryName"
+            required
+            maxlength="60"
+            oninput="handleCategoryNameInput(event)"
+            placeholder="Ex: Anéis Solitários, Colares Riviera, Alianças 18k..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-sm focus:outline-none focus:border-[#C5A059]"
+          >
+
+          <!-- Preview de Slug em tempo real -->
+          <div id="crudCategorySlugPreviewRow" class="hidden flex items-center gap-1.5 text-xs text-stone-500 pt-0.5">
+            <span>Slug gerado:</span>
+            <span id="crudCategorySlugPreview" class="font-mono text-[#C5A059] bg-stone-900 px-2 py-0.5 rounded-md font-semibold text-[11px]">/slug</span>
+          </div>
+
+          <!-- Alerta de Validação de Duplicidade -->
+          <p id="crudCategoryValidationError" class="hidden text-xs text-rose-600 font-semibold flex items-center gap-1.5 pt-1">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="crudCategoryValidationErrorText"></span>
+          </p>
+        </div>
+
+        <!-- Descrição Rápida -->
+        <div class="space-y-1.5">
+          <label class="block font-bold text-stone-700 uppercase tracking-wider text-[11px]">
+            Descrição Rápida (Opcional / SEO)
+          </label>
+          <textarea
+            id="crudCategoryDescription"
+            rows="3"
+            maxlength="300"
+            placeholder="Ex: Seleção autoral de peças cravejadas com garantia eterna..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-800 text-xs focus:outline-none focus:border-[#C5A059] resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Status Ativa / Inativa -->
+        <div class="flex items-center justify-between p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+          <div>
+            <span class="text-xs font-bold text-stone-900 block">Status da Categoria</span>
+            <span class="text-[11px] text-stone-500">Categorias inativas não aparecem nos filtros da loja pública.</span>
+          </div>
+          <button
+            type="button"
+            id="crudCategoryActiveToggleBtn"
+            onclick="toggleCategoryFormActiveState()"
+            class="inline-flex items-center gap-2 cursor-pointer"
+          >
+            <div id="crudCategoryActiveTrack" class="w-11 h-6 flex items-center rounded-full p-1 transition-colors bg-emerald-600">
+              <div id="crudCategoryActiveThumb" class="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform translate-x-5"></div>
+            </div>
+          </button>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2.5 border-t border-stone-200">
+          <button type="button" onclick="closeCategoryFormModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-100 font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" id="crudCategorySubmitBtn" class="px-5 py-2.5 rounded-xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider shadow hover-glow">
+            Salvar Categoria
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE EXCLUSÃO SEGURA DE CATEGORIA (PROTEÇÃO DE INTEGRIDADE) ================= -->
+  <div id="categoryDeleteModal" class="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[90] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white cms-window rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto p-6 sm:p-7 text-stone-900">
+      
+      <!-- CASO A: BLOQUEIO POR INTEGRIDADE REFERENCIAL (productCount > 0) -->
+      <div id="categoryDeleteBlockedView" class="hidden space-y-4 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center mx-auto">
+          <i class="fas fa-exclamation-triangle text-xl"></i>
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-lg font-heading font-bold text-stone-900">Exclusão Bloqueada</h3>
+          <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">
+            A categoria <strong id="categoryDeleteBlockedName" class="text-stone-900"></strong> não pode ser excluída pois possui
+            <strong id="categoryDeleteBlockedCount" class="text-amber-700"></strong> associada(s).
+          </p>
+          <p class="text-[11px] text-stone-500">
+            Reatribua as joias para outra categoria antes de remover para preservar a integridade do catálogo.
+          </p>
+        </div>
+        <div class="pt-2">
+          <button type="button" onclick="closeCategoryDeleteModal()" class="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider transition">
+            Entendido
+          </button>
+        </div>
+      </div>
+
+      <!-- CASO B: SEM PRODUTOS VINCULADOS - CONFIRMAÇÃO DE EXCLUSÃO -->
+      <div id="categoryDeleteConfirmView" class="hidden space-y-4 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-300 text-rose-600 flex items-center justify-center mx-auto">
+          <i class="fas fa-trash-alt text-xl"></i>
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-lg font-heading font-bold text-stone-900">Confirmar Exclusão</h3>
+          <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">
+            Tem certeza de que deseja excluir permanentemente a categoria
+            <strong id="categoryDeleteConfirmName" class="text-rose-600"></strong>?
+          </p>
+          <p class="text-[11px] text-stone-500">
+            Esta ação é irreversível na nuvem e o filtro deixará de existir em todos os dispositivos.
+          </p>
+        </div>
+        <div class="pt-2 flex items-center gap-2.5">
+          <button type="button" onclick="closeCategoryDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-stone-300 hover:bg-stone-100 text-stone-700 font-bold text-xs transition">
+            Cancelar
+          </button>
+          <button type="button" id="confirmDeleteCategoryBtn" onclick="confirmDeleteCategory()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider shadow-md transition">
+            Confirmar Exclusão
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2285,6 +2531,6 @@
   </button>
 
   <!-- Main JavaScript Logic -->
-  <script src="app.js?v=20261029-realtime-v4"></script>
+  <script src="app.js?v=20261029-realtime-v5"></script>
 </body>
 </html>
