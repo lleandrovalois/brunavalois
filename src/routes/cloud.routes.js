@@ -8,6 +8,15 @@ const express = require('express');
 const router = express.Router();
 const cloudStore = require('../storage/CloudRealtimeStore');
 
+// Garante zero cache HTTP em todas as operações de banco em nuvem
+router.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 /**
  * Middleware de verificação de autenticação prévia obrigatória
  */

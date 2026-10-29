@@ -43,6 +43,7 @@ const DEFAULT_SITE_CONFIG = {
     maxInstallmentsWithoutInterest: 10,
     pixKey: '45.892.102/0001-44'
   },
+  initialSeedCompleted: true,
   updatedAt: new Date().toISOString()
 };
 
@@ -274,25 +275,37 @@ class CloudRealtimeStore {
     const productsColPath = `${base}/products`;
     const ordersColPath = `${base}/custom_orders`;
 
-    if (!this.collections[configColPath] || !this.collections[configColPath]['main']) {
+    const existingMain = this.collections[configColPath] && this.collections[configColPath]['main'];
+    const alreadySeeded = Boolean(existingMain && existingMain.initialSeedCompleted);
+
+    if (!existingMain) {
       if (!this.collections[configColPath]) this.collections[configColPath] = {};
       this.collections[configColPath]['main'] = JSON.parse(JSON.stringify(DEFAULT_SITE_CONFIG));
       modified = true;
+    } else if (!existingMain.initialSeedCompleted) {
+      existingMain.initialSeedCompleted = true;
+      modified = true;
     }
 
-    if (!this.collections[productsColPath] || Object.keys(this.collections[productsColPath]).length === 0) {
+    if (!alreadySeeded && (!this.collections[productsColPath] || Object.keys(this.collections[productsColPath]).length === 0)) {
       this.collections[productsColPath] = {};
       for (const prod of INITIAL_PRODUCTS) {
         this.collections[productsColPath][prod.id] = { ...prod };
       }
       modified = true;
+    } else if (!this.collections[productsColPath]) {
+      this.collections[productsColPath] = {};
+      modified = true;
     }
 
-    if (!this.collections[ordersColPath]) {
+    if (!alreadySeeded && !this.collections[ordersColPath]) {
       this.collections[ordersColPath] = {};
       for (const order of INITIAL_CUSTOM_ORDERS) {
         this.collections[ordersColPath][order.id] = { ...order };
       }
+      modified = true;
+    } else if (!this.collections[ordersColPath]) {
+      this.collections[ordersColPath] = {};
       modified = true;
     }
 

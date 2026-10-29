@@ -417,8 +417,9 @@ async function getDoc(docRef) {
   if (firebaseNativeSdk && !docRef._type) {
     return await firebaseNativeSdk.getDoc(docRef);
   }
-  const res = await fetch(`/api/cloud/doc?path=${encodeURIComponent(docRef.path)}`, {
+  const res = await fetch(`/api/cloud/doc?path=${encodeURIComponent(docRef.path)}&_t=${Date.now()}`, {
     method: 'GET',
+    cache: 'no-store',
     headers: getCloudAuthHeaders()
   });
   const json = await res.json();
@@ -439,8 +440,9 @@ async function getDocs(colRef) {
   if (firebaseNativeSdk && !colRef._type) {
     return await firebaseNativeSdk.getDocs(colRef);
   }
-  const res = await fetch(`/api/cloud/collection?path=${encodeURIComponent(colRef.path)}`, {
+  const res = await fetch(`/api/cloud/collection?path=${encodeURIComponent(colRef.path)}&_t=${Date.now()}`, {
     method: 'GET',
+    cache: 'no-store',
     headers: getCloudAuthHeaders()
   });
   const json = await res.json();
@@ -462,6 +464,26 @@ async function getDocs(colRef) {
   };
 }
 
+async function refreshActiveListenersForPath(docPath) {
+  if (firebaseNativeSdk) return;
+  const normalized = '/' + String(docPath || '').replace(/^\/+/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const collectionPath = segments.length >= 2 ? '/' + segments.slice(0, -1).join('/') : '';
+
+  for (const [, listener] of activeListeners.entries()) {
+    const { ref, onNext } = listener;
+    try {
+      if (ref._type === 'doc' && ref.path === normalized) {
+        const snap = await getDoc(ref);
+        onNext(snap);
+      } else if (ref._type === 'collection' && ref.path === collectionPath) {
+        const snap = await getDocs(ref);
+        onNext(snap);
+      }
+    } catch {}
+  }
+}
+
 async function setDoc(docRef, payload, options = { merge: false }) {
   ensureCloudAuthenticated();
   if (firebaseNativeSdk && !docRef._type) {
@@ -469,6 +491,7 @@ async function setDoc(docRef, payload, options = { merge: false }) {
   }
   const res = await fetch('/api/cloud/doc', {
     method: 'PUT',
+    cache: 'no-store',
     headers: getCloudAuthHeaders(),
     body: JSON.stringify({
       path: docRef.path,
@@ -482,6 +505,7 @@ async function setDoc(docRef, payload, options = { merge: false }) {
     err.code = json.code || 'permission-denied';
     throw err;
   }
+  await refreshActiveListenersForPath(docRef.path);
   return json;
 }
 
@@ -492,6 +516,7 @@ async function updateDoc(docRef, partialData) {
   }
   const res = await fetch('/api/cloud/doc', {
     method: 'PATCH',
+    cache: 'no-store',
     headers: getCloudAuthHeaders(),
     body: JSON.stringify({
       path: docRef.path,
@@ -504,6 +529,7 @@ async function updateDoc(docRef, partialData) {
     err.code = json.code || 'permission-denied';
     throw err;
   }
+  await refreshActiveListenersForPath(docRef.path);
   return json;
 }
 
@@ -514,6 +540,7 @@ async function deleteDoc(docRef) {
   }
   const res = await fetch(`/api/cloud/doc?path=${encodeURIComponent(docRef.path)}`, {
     method: 'DELETE',
+    cache: 'no-store',
     headers: getCloudAuthHeaders()
   });
   const json = await res.json();
@@ -522,6 +549,7 @@ async function deleteDoc(docRef) {
     err.code = json.code || 'permission-denied';
     throw err;
   }
+  await refreshActiveListenersForPath(docRef.path);
   return json;
 }
 
@@ -691,6 +719,54 @@ function hideCloudPermissionError() {
 }
 
 // ================= 5. SEEDING GLOBAL DETERMINÍSTICO & LISTENERS EM TEMPO REAL =================
+let realtimeWatchdogTimer = null;
+
+async function migrateLegacyLocalDataIfPresent() {
+  try {
+    const legacyProductsRaw = localStorage.getItem('BV_PRODUCTS');
+    if (legacyProductsRaw) {
+      const legacyProducts = JSON.parse(legacyProductsRaw);
+      if (Array.isArray(legacyProducts)) {
+        const defaultIds = new Set(INITIAL_PRODUCTS.map(p => p.id));
+        const hasCustomOrEditedCatalog =
+          legacyProducts.length !== INITIAL_PRODUCTS.length ||
+          legacyProducts.some(p => !defaultIds.has(p.id));
+
+        if (hasCustomOrEditedCatalog) {
+          console.log('[CloudMigration] Migrando catálogo pendente do navegador para o banco central na nuvem...');
+          const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+          const currentRemoteSnap = await getDocs(productsColRef);
+          const keepIds = new Set(legacyProducts.map(p => String(p.id)));
+
+          // Remove peças padrões que foram excluídas pela administradora
+          for (const docSnap of currentRemoteSnap.docs) {
+            if (!keepIds.has(String(docSnap.id))) {
+              const delRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', docSnap.id);
+              await deleteDoc(delRef);
+            }
+          }
+
+          // Sobe todas as peças cadastradas pela administradora para a nuvem
+          for (const item of legacyProducts) {
+            const itemId = String(item.id || `bv-prod-${Date.now()}`);
+            const itemRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', itemId);
+            await setDoc(itemRef, { ...item, id: itemId, updatedAt: new Date().toISOString() }, { merge: true });
+          }
+        }
+      }
+    }
+
+    // Remove definitivamente chaves legadas de localStorage para impedir fragmentação futura
+    localStorage.removeItem('BV_PRODUCTS');
+    localStorage.removeItem('BV_THEME_CONFIG');
+    localStorage.removeItem('BV_CONTENT_CONFIG');
+    localStorage.removeItem('BV_PAYMENT_CONFIG');
+    localStorage.removeItem('BV_ATELIE_ORDERS');
+  } catch (err) {
+    console.warn('[CloudMigration] Aviso na limpeza de chaves legadas:', err);
+  }
+}
+
 async function seedInitialCloudData() {
   ensureCloudAuthenticated();
 
@@ -700,32 +776,60 @@ async function seedInitialCloudData() {
 
   // 1. Verificar se o documento mestre site_config/main existe na nuvem
   const configSnap = await getDoc(configDocRef);
+  const alreadySeeded = configSnap.exists() && Boolean(configSnap.data()?.initialSeedCompleted);
+
   if (!configSnap.exists()) {
     await setDoc(configDocRef, {
       theme: DEFAULT_THEME_CONFIG,
       content: DEFAULT_CONTENT_CONFIG,
       payment: DEFAULT_PAYMENT_CONFIG,
+      initialSeedCompleted: true,
       updatedAt: new Date().toISOString()
     }, { merge: true });
   }
 
-  // 2. Verificar se a coleção global de produtos está vazia
-  const productsSnap = await getDocs(productsColRef);
-  if (productsSnap.empty) {
-    for (const product of INITIAL_PRODUCTS) {
-      const prodDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id);
-      await setDoc(prodDocRef, product, { merge: true });
+  // 2. Se for a primeira inicialização do banco na nuvem e a coleção estiver vazia, executa o seed das 8 joias iniciais
+  if (!alreadySeeded) {
+    const productsSnap = await getDocs(productsColRef);
+    if (productsSnap.empty) {
+      for (const product of INITIAL_PRODUCTS) {
+        const prodDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id);
+        await setDoc(prodDocRef, product, { merge: true });
+      }
+    }
+
+    const ordersSnap = await getDocs(ordersColRef);
+    if (ordersSnap.empty) {
+      for (const order of INITIAL_ATELIE_ORDERS) {
+        const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_orders', order.id);
+        await setDoc(orderDocRef, order, { merge: true });
+      }
     }
   }
 
-  // 3. Verificar se a coleção global de encomendas sob medida está vazia
-  const ordersSnap = await getDocs(ordersColRef);
-  if (ordersSnap.empty) {
-    for (const order of INITIAL_ATELIE_ORDERS) {
-      const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_orders', order.id);
-      await setDoc(orderDocRef, order, { merge: true });
+  // 3. Migra eventuais peças que estavam presas em cache local antes da atualização e limpa chaves antigas
+  await migrateLegacyLocalDataIfPresent();
+}
+
+function startRealtimeSyncWatchdog() {
+  if (firebaseNativeSdk) return;
+  if (realtimeWatchdogTimer) clearInterval(realtimeWatchdogTimer);
+
+  realtimeWatchdogTimer = setInterval(async () => {
+    if (!CloudState.isAuthenticated || activeListeners.size === 0) return;
+    for (const [, listener] of activeListeners.entries()) {
+      const { ref, onNext } = listener;
+      try {
+        if (ref._type === 'doc') {
+          const snap = await getDoc(ref);
+          onNext(snap);
+        } else if (ref._type === 'collection') {
+          const snap = await getDocs(ref);
+          onNext(snap);
+        }
+      } catch {}
     }
-  }
+  }, 3000);
 }
 
 function setupRealtimeListeners() {
@@ -852,6 +956,7 @@ async function initCloudPersistenceEngine() {
       try {
         await seedInitialCloudData();
         setupRealtimeListeners();
+        startRealtimeSyncWatchdog();
         updateCloudConnectionStatus('connected');
       } catch (seedErr) {
         showCloudPermissionError('Inicialização/Seeding', seedErr);
@@ -2990,11 +3095,57 @@ function openProductFormModal(isEdit = false) {
       modal.firstElementChild?.classList.remove('scale-95');
     }, 10);
   }
+  const uploadStatus = document.getElementById('crudProductImageUploadStatus');
+  if (uploadStatus) uploadStatus.innerText = 'JPG, PNG ou WebP';
+
   if (!isEdit) {
     document.getElementById('productFormTitle').innerText = 'Adicionar Nova Joia';
     document.getElementById('productCrudForm').reset();
     document.getElementById('crudProductId').value = '';
   }
+}
+
+function handleCrudProductImageUpload(event) {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById('crudProductImageUploadStatus');
+  if (statusEl) statusEl.innerText = 'Otimizando imagem...';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_DIM = 900;
+      let width = img.width;
+      let height = img.height;
+      if (width > height && width > MAX_DIM) {
+        height = Math.round((height * MAX_DIM) / width);
+        width = MAX_DIM;
+      } else if (height > MAX_DIM) {
+        width = Math.round((width * MAX_DIM) / height);
+        height = MAX_DIM;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+      const urlInput = document.getElementById('crudProductImage');
+      if (urlInput) urlInput.value = compressedDataUrl;
+      if (statusEl) statusEl.innerText = `Foto pronta (${file.name})`;
+      showToast('Foto carregada e otimizada para a nuvem!');
+    };
+    img.onerror = () => {
+      const urlInput = document.getElementById('crudProductImage');
+      if (urlInput) urlInput.value = e.target.result;
+      if (statusEl) statusEl.innerText = `Foto carregada (${file.name})`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function closeProductFormModal() {
@@ -3034,12 +3185,15 @@ function editProduct(productId) {
 async function handleProductFormSubmit(e) {
   if (e && e.preventDefault) e.preventDefault();
 
+  const submitBtn = document.getElementById('crudProductSubmitBtn');
+  const originalBtnHtml = submitBtn ? submitBtn.innerHTML : 'Salvar Joia';
+
   const existingId = document.getElementById('crudProductId').value.trim();
   const id = existingId || `bv-prod-${Date.now()}`;
   const name = document.getElementById('crudProductName').value.trim();
   const category = document.getElementById('crudProductCategory').value;
   const price = parseFloat(document.getElementById('crudProductPrice').value) || 0;
-  const image = document.getElementById('crudProductImage').value.trim();
+  const image = document.getElementById('crudProductImage').value.trim() || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80';
   const tag = document.getElementById('crudProductTag').value.trim();
   const material = document.getElementById('crudProductMaterial').value.trim();
   const description = document.getElementById('crudProductDescription').value.trim();
@@ -3060,6 +3214,11 @@ async function handleProductFormSubmit(e) {
     payload.createdAt = new Date().toISOString();
   }
 
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Sincronizando...';
+  }
+
   try {
     ensureCloudAuthenticated();
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', id);
@@ -3073,6 +3232,11 @@ async function handleProductFormSubmit(e) {
     );
   } catch (error) {
     showCloudPermissionError('Salvar Joia no Catálogo', error);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnHtml;
+    }
   }
 }
 

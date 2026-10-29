@@ -13,6 +13,9 @@ const app = express();
 const PORT = config.port;
 const BASE_DIR = path.resolve(__dirname);
 
+// Desabilita ETag globalmente para evitar respostas 304 Not Modified com estado antigo em clientes multi-dispositivo
+app.set('etag', false);
+
 // ================= MIDDLEWARES BÁSICOS & SEGURANÇA =================
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -21,14 +24,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Suporte a JSON e URL-Encoded com preservação de rawBody para assinaturas
+// Suporte a JSON e URL-Encoded com preservação de rawBody para assinaturas e imagens em alta resolução
 app.use(express.json({
-  limit: '2mb',
+  limit: '25mb',
   verify: (req, res, buf) => {
     req.rawBody = buf;
   }
 }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // ================= HEALTH CHECK =================
 app.get(['/health', '/healthz'], (req, res) => {
@@ -80,24 +83,33 @@ app.get('/checkout/pending', (req, res) => {
   }
 });
 
-app.get(['/checkout', '/meus-pedidos', '/rastreio', '/pedido/:id', '/order-confirmed/:id'], (req, res) => {
+app.get(['/', '/index.html', '/checkout', '/meus-pedidos', '/rastreio', '/pedido/:id', '/order-confirmed/:id'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(BASE_DIR, 'index.html'));
 });
 
 
 // ================= ARQUIVOS ESTÁTICOS & SPA =================
-// Serve arquivos estáticos da raiz com controle de cache
+// Serve arquivos estáticos da raiz com invalidação estrita de cache para HTML, JS e CSS
 app.use(express.static(BASE_DIR, {
-  maxAge: '1h',
+  etag: false,
+  lastModified: false,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
   }
 }));
 
 // Fallback para qualquer rota não mapeada (SPA)
 app.use((req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   const indexPath = path.join(BASE_DIR, 'index.html');
   res.sendFile(indexPath);
 });
