@@ -45,7 +45,9 @@ app.get(['/health', '/healthz'], (req, res) => {
 // ================= ROTAS DE API =================
 const checkoutRoutes = require('./src/routes/checkout.routes');
 const webhookRoutes = require('./src/routes/webhook.routes');
+const cloudRoutes = require('./src/routes/cloud.routes');
 
+app.use('/api/cloud', cloudRoutes);
 app.use('/api', checkoutRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/webhooks', webhookRoutes);
@@ -86,10 +88,10 @@ app.get(['/checkout', '/meus-pedidos', '/rastreio', '/pedido/:id', '/order-confi
 // ================= ARQUIVOS ESTÁTICOS & SPA =================
 // Serve arquivos estáticos da raiz com controle de cache
 app.use(express.static(BASE_DIR, {
-  maxAge: '1d',
+  maxAge: '1h',
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache');
+    if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     }
   }
 }));

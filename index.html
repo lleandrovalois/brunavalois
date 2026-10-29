@@ -45,14 +45,20 @@
 </head>
 <body class="antialiased selection:bg-[#C5A059] selection:text-white">
 
-  <!-- ================= TOP ANNOUNCEMENT BAR ================= -->
+  <!-- ================= TOP ANNOUNCEMENT BAR & CLOUD SYNC INDICATOR ================= -->
   <div id="topBar" class="bg-[#1C1917] text-[#FAF9F6] text-xs py-2 px-4 transition-colors duration-300 border-b border-[#C5A059]/20">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-2">
       <div class="flex items-center gap-2 text-center sm:text-left">
         <span class="inline-block w-2 h-2 rounded-full bg-[#C5A059] animate-pulse"></span>
         <span id="topAnnouncementText" class="tracking-wide">✨ Frete Grátis com Seguro em compras acima de R$ 450 | Certificado de Garantia Eterna</span>
       </div>
-      <div class="flex items-center gap-4 text-[11px] uppercase tracking-wider text-stone-300">
+      <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px] uppercase tracking-wider text-stone-300">
+        <!-- Indicador Visual de Conectividade em Tempo Real (Barra Superior) -->
+        <div id="cloudSyncBadgeTop" class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[10px] font-semibold tracking-wider transition-all duration-300">
+          <span id="cloudSyncDotTop" class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="cloudSyncTextTop">Tentando restabelecer conexão com o banco central...</span>
+        </div>
+        <span class="text-stone-600 hidden sm:inline">|</span>
         <a href="/meus-pedidos" onclick="navigateToTracking(event)" class="hover:text-[#C5A059] transition flex items-center gap-1.5 font-medium text-stone-300">
           <i class="fas fa-truck text-[#C5A059]"></i> Acompanhar Pedido
         </a>
@@ -65,6 +71,19 @@
           <i class="fas fa-lock text-[#C5A059]"></i> Painel CMS
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Alerta Global de Permissão / Erro de Banco em Nuvem -->
+  <div id="cloudPermissionAlertBanner" class="hidden bg-rose-950/95 border-b border-rose-500/50 text-rose-100 px-4 py-2.5 text-xs">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <i class="fas fa-exclamation-triangle text-rose-400 text-sm"></i>
+        <span id="cloudPermissionAlertText" class="font-medium">Falha de comunicação ou permissão no banco em nuvem. Nenhuma alteração local foi aplicada.</span>
+      </div>
+      <button onclick="document.getElementById('cloudPermissionAlertBanner')?.classList.add('hidden')" class="text-rose-300 hover:text-white text-xs px-2 py-0.5 rounded border border-rose-700">
+        Fechar
+      </button>
     </div>
   </div>
 
@@ -206,6 +225,11 @@
   <section id="vitrine" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     <!-- Header da Vitrine -->
     <div class="text-center max-w-2xl mx-auto mb-12">
+      <!-- Indicador Visual de Conectividade Acima da Vitrine -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-semibold mb-4 shadow-sm transition-all duration-300" id="cloudSyncBadgeVitrine">
+        <span id="cloudSyncDotVitrine" class="w-2.5 h-2.5 rounded-full bg-amber-500 pulse-beacon"></span>
+        <span id="cloudSyncTextVitrine">Tentando restabelecer conexão com o banco central...</span>
+      </div>
       <span class="text-xs uppercase tracking-[0.3em] text-[#C5A059] font-semibold block mb-2">Curadoria Exclusiva</span>
       <h2 class="text-3xl sm:text-4xl font-heading font-bold text-stone-900 mb-4">Joias & Semijoias Finas</h2>
       <div class="w-16 h-0.5 bg-[#C5A059] mx-auto mb-4"></div>
@@ -1358,11 +1382,15 @@
           </span>
         </div>
 
-        <!-- Botão Finalizar Compra (Modelo JVMODAS) -->
+        <!-- Botões de Checkout (Fluxo Completo de Entrega & Modal Embutido Mercado Pago) -->
         <div class="space-y-2 pt-1">
           <button id="cartProceedToCheckoutBtn" onclick="navigateToCheckout()" class="w-full py-4 rounded-2xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-lg hover:shadow-xl hover-glow transition transform active:scale-95 flex items-center justify-center gap-2 group">
             <i class="fas fa-lock text-sm group-hover:scale-110 transition-transform"></i>
             <span>Finalizar Compra</span>
+          </button>
+          <button id="checkoutBtn" onclick="openMercadoPagoCheckout()" class="w-full py-3 rounded-2xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold uppercase tracking-wider text-[11px] shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+            <i class="fas fa-handshake text-sm"></i>
+            <span>Checkout Embutido Mercado Pago (PIX, Cartão & Saldo)</span>
           </button>
         </div>
 
@@ -1373,6 +1401,208 @@
       </div>
 
 
+    </div>
+  </div>
+
+  <!-- ================= CHECKOUT MERCADO PAGO EM MODAL EMBUTIDO ================= -->
+  <div id="mercadoPagoModal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-transform duration-300 my-auto text-stone-900">
+      
+      <!-- Cabeçalho Oficial Mercado Pago -->
+      <div class="bg-[#009EE3] text-white p-5 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <i class="fas fa-shield-alt text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-lg tracking-tight">mercado pago</span>
+              <span class="text-[10px] uppercase font-bold bg-white text-[#009EE3] px-2 py-0.5 rounded-full">Checkout Oficial</span>
+            </div>
+            <p class="text-xs text-sky-100 flex items-center gap-1">
+              <i class="fas fa-lock text-[10px]"></i> Ambiente Criptografado SSL 256-bit
+            </p>
+          </div>
+        </div>
+        <button id="closeMpModalBtn" onclick="closeMercadoPagoCheckout()" class="text-white/80 hover:text-white text-xl p-1">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Barra de Valor a Pagar -->
+      <div class="bg-sky-50 px-6 py-3 border-b border-sky-100 flex justify-between items-center text-xs sm:text-sm">
+        <span class="text-stone-700">Total a pagar para <strong>Bruna Valois Joias</strong>:</span>
+        <span id="mpPayAmount" class="text-lg font-bold text-stone-900 font-heading">R$ 0,00</span>
+      </div>
+
+      <!-- Abas de Pagamento Mercado Pago -->
+      <div class="flex border-b border-stone-200 bg-stone-50 text-xs sm:text-sm font-medium">
+        <button id="mpTabPix" onclick="switchMpTab('pix')" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-[#009EE3] text-[#009EE3] font-bold transition flex items-center justify-center gap-2">
+          <i class="fab fa-pix text-emerald-500 text-base"></i> PIX Instantâneo
+        </button>
+        <button id="mpTabCard" onclick="switchMpTab('card')" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-2">
+          <i class="fas fa-credit-card text-blue-500 text-base"></i> Cartão de Crédito
+        </button>
+        <button id="mpTabBalance" onclick="switchMpTab('balance')" class="mp-tab flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-2">
+          <i class="fas fa-wallet text-amber-500 text-base"></i> Saldo Mercado Pago
+        </button>
+      </div>
+
+      <!-- Conteúdo das Abas -->
+      <div class="p-6">
+        
+        <!-- ================= ABA 1: PIX INSTANTÂNEO ================= -->
+        <div id="mpViewPix" class="space-y-6">
+          <div class="text-center">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold mb-2">
+              <i class="fas fa-bolt"></i> Aprovação Imediata em até 10 segundos
+            </span>
+            <p class="text-xs text-stone-500">Escaneie o QR Code abaixo com o aplicativo do seu banco ou copie a chave:</p>
+          </div>
+
+          <!-- Container do QR Code e Timer -->
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-6 bg-stone-50 p-6 rounded-2xl border border-stone-200">
+            <div id="mpPixQrCodeContainer" class="p-3 bg-white rounded-xl shadow-md border border-stone-200 flex items-center justify-center">
+              <!-- Renderizado via QRCode.js -->
+            </div>
+
+            <div class="space-y-3 text-center sm:text-left flex-1">
+              <div class="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                <i class="fas fa-stopwatch"></i> Expira em: <span id="pixTimer" class="font-bold">14:59</span>
+              </div>
+              <p class="text-xs text-stone-600">
+                1. Abra o aplicativo do seu banco.<br>
+                2. Escolha pagar via <strong>PIX</strong> e escaneie o código ou cole a chave.<br>
+                3. O pedido é confirmado instantaneamente.
+              </p>
+            </div>
+          </div>
+
+          <!-- Código Copia e Cola -->
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1.5">Código PIX Copia e Cola:</label>
+            <div class="flex gap-2">
+              <input type="text" id="mpPixCodeInput" readonly value="" class="flex-1 px-3 py-2 text-xs bg-stone-100 border border-stone-200 rounded-lg text-stone-700 font-mono truncate focus:outline-none">
+              <button id="copyPixBtn" onclick="copyMpPixCode()" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fas fa-copy"></i> <span>Copiar</span>
+              </button>
+            </div>
+            <p id="mpPixCopiedFeedback" class="hidden text-xs text-emerald-600 font-medium mt-1.5">
+              <i class="fas fa-check"></i> Código copiado para a área de transferência!
+            </p>
+          </div>
+
+          <!-- Botão Confirmar Pagamento -->
+          <button id="simulatePixPaidBtn" onclick="finalizePurchase('PIX Instantâneo Oficial')" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-check-circle"></i> Confirmar Pagamento PIX Instantâneo
+          </button>
+        </div>
+
+        <!-- ================= ABA 2: CARTÃO DE CRÉDITO ================= -->
+        <div id="mpViewCard" class="hidden space-y-6">
+          
+          <!-- Virtual Credit Card Live Preview -->
+          <div class="virtual-card p-6 text-white max-w-sm mx-auto h-48 flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[9px] uppercase tracking-widest text-[#C5A059] block">Alta Joalheria</span>
+                <span class="font-heading text-sm font-semibold tracking-wider">BRUNA VALOIS</span>
+              </div>
+              <div id="cardBrandIcon" class="text-2xl text-stone-200">
+                <i class="fab fa-cc-visa"></i>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <span class="text-[9px] text-stone-400 uppercase tracking-widest">Número do Cartão</span>
+              <p id="cardPreviewNumber" class="font-mono text-base tracking-[0.2em] font-medium text-stone-100">
+                •••• •••• •••• ••••
+              </p>
+            </div>
+
+            <div class="flex justify-between items-end text-xs">
+              <div>
+                <span class="text-[8px] text-stone-400 uppercase tracking-wider block">Titular</span>
+                <span id="cardPreviewName" class="font-medium tracking-wider uppercase truncate max-w-[180px] block">NOME DO CLIENTE</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[8px] text-stone-400 uppercase tracking-wider block">Validade</span>
+                <span id="cardPreviewExpiry" class="font-mono font-medium">MM/AA</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário do Cartão -->
+          <form id="cardPaymentForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Número do Cartão *</label>
+              <div class="relative">
+                <input type="text" id="cardNumberInput" required maxlength="19" placeholder="0000 0000 0000 0000" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono">
+                <span id="cardInputBrandBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 text-lg">
+                  <i class="fas fa-credit-card"></i>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Nome Impresso no Cartão *</label>
+              <input type="text" id="cardNameInput" required placeholder="Como está no cartão" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm uppercase focus:outline-none focus:border-[#009EE3]">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">Validade (MM/AA) *</label>
+                <input type="text" id="cardExpiryInput" required maxlength="5" placeholder="MM/AA" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono text-center">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-700 mb-1">CVV / Segurança *</label>
+                <input type="password" id="cardCvvInput" required maxlength="4" placeholder="123" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3] font-mono text-center">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">CPF do Titular *</label>
+              <input type="text" id="cardCpfInput" required maxlength="14" placeholder="000.000.000-00" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Opção de Parcelamento *</label>
+              <select id="cardInstallmentsSelect" class="w-full px-4 py-2.5 rounded-lg border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#009EE3]">
+                <!-- Preenchido dinamicamente com base no total e configuração CMS -->
+              </select>
+            </div>
+
+            <button type="submit" class="w-full py-4 rounded-xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+              <i class="fas fa-lock"></i> <span id="cardPayBtnText">Pagar R$ 0,00 com Mercado Pago</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- ================= ABA 3: SALDO EM CONTA MERCADO PAGO ================= -->
+        <div id="mpViewBalance" class="hidden space-y-6">
+          <div class="p-6 bg-sky-50 rounded-2xl border border-sky-200 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-[#009EE3] text-white flex items-center justify-center mx-auto text-2xl shadow-md">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-base">Conta Conectada ao Mercado Pago</h4>
+              <p class="text-xs text-stone-500">bruna.cliente.vip@mercadopago.com</p>
+            </div>
+            <div class="py-2 px-4 bg-white rounded-xl inline-block border border-sky-100 shadow-sm">
+              <span class="text-xs text-stone-500 block">Saldo Disponível:</span>
+              <span class="text-lg font-bold text-emerald-600">R$ 18.540,00</span>
+            </div>
+            <p class="text-xs text-stone-600 max-w-sm mx-auto">
+              Ao autorizar o débito, o valor da sua compra será deduzido instantaneamente do seu saldo com aprovação imediata.
+            </p>
+          </div>
+
+          <button id="payWithMpBalanceBtn" onclick="finalizePurchase('Saldo em Conta Mercado Pago')" class="w-full py-4 rounded-xl bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+            <i class="fas fa-fingerprint text-lg"></i> Autorizar Débito Imediato de R$ <span id="mpBalancePayAmount">0,00</span>
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -1611,8 +1841,8 @@
           <div>
             <h3 class="font-heading font-bold text-lg text-white">Painel CMS Administrativo</h3>
             <div class="flex items-center gap-2 text-xs text-stone-400">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-beacon"></span>
-              <span>Sincronização em Tempo Real Ativa</span>
+              <span id="cloudSyncDotCms" class="w-2 h-2 rounded-full bg-emerald-500 pulse-beacon"></span>
+              <span id="cloudSyncTextCms">Sincronizado na Nuvem (Tempo Real Global)</span>
             </div>
           </div>
         </div>
@@ -1913,7 +2143,7 @@
           <button onclick="closeCmsModal()" class="px-5 py-2.5 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-100 font-semibold text-xs transition">
             Fechar
           </button>
-          <button onclick="saveCmsChanges()" class="px-6 py-2.5 rounded-xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-md hover-glow transition">
+          <button id="cmsSaveSettingsBtn" onclick="saveCmsSettings()" class="px-6 py-2.5 rounded-xl bg-gold-gradient text-stone-950 font-bold uppercase tracking-wider text-xs shadow-md hover-glow transition">
             Salvar e Sincronizar
           </button>
         </div>

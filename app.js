@@ -1,9 +1,11 @@
 /**
- * BRUNA VALOIS JOIAS E SEMIJOIAS - APLICAÇÃO DE ALTA JOALHERIA
- * Arquitetura Modular em JavaScript com Sincronização em Tempo Real (BroadcastChannel + LocalStorage)
+ * BRUNA VALOIS JOIAS E SEMIJOIAS - APLICAÇÃO DISTRIBUÍDA DE ALTA JOALHERIA
+ * Arquitetura Full-Stack com Persistência Global em Nuvem (Single Source of Truth)
+ * e Sincronização Bidirecional em Tempo Real Multi-Dispositivo / Multi-Cliente
+ * (Firestore Modular SDK v11+ / Cloud Realtime Stream SSE)
  */
 
-// ================= ESTADO INICIAL E CATÁLOGO PADRÃO =================
+// ================= 1. CONFIGURAÇÕES PADRÃO PARA SEEDING GLOBAL DETERMINÍSTICO =================
 const DEFAULT_THEME_CONFIG = {
   preset: 'classic',
   colorPrimary: '#1C1917',
@@ -60,9 +62,9 @@ const DEFAULT_CONTENT_CONFIG = {
 
 const DEFAULT_PAYMENT_CONFIG = {
   checkoutUrl: '',
-  publicKey: 'APP_USR-78921-6543-9876-0001',
+  publicKey: 'APP_USR-13f63464-940d-4c81-81b7-a908294bfdea',
   accessToken: '',
-  environment: 'production',
+  environment: 'sandbox',
   maxInstallmentsWithoutInterest: 10,
   pixKey: '45.892.102/0001-44'
 };
@@ -76,7 +78,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80',
     tag: 'Alta Joalheria',
     material: 'Ouro Branco 18k (750) com Diamante Natural Brilhante',
-    description: 'Lapidação brilhante com garra sutil em Ouro Branco maciço 18k. Design atemporal para noivados e celebrações inesquecíveis.'
+    description: 'Lapidação brilhante com garra sutil em Ouro Branco maciço 18k. Design atemporal para noivados e celebrações inesquecíveis.',
+    createdAt: '2026-10-28T10:00:01.000Z'
   },
   {
     id: 'bv-002',
@@ -86,7 +89,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
     tag: 'Edição Limitada',
     material: 'Ouro Amarelo 18k e Esmeraldas Naturais de Muzo',
-    description: 'Rara seleção de esmeraldas colombianas lapidadas à mão, intercaladas por microdiamantes com fecho gaveta e trava dupla de segurança.'
+    description: 'Rara seleção de esmeraldas colombianas lapidadas à mão, intercaladas por microdiamantes com fecho gaveta e trava dupla de segurança.',
+    createdAt: '2026-10-28T10:00:02.000Z'
   },
   {
     id: 'bv-003',
@@ -96,7 +100,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
     tag: 'Lançamento',
     material: 'Prata 925 com Banho Ouro 18k (20 milésimos)',
-    description: 'Pérolas barrocas naturais dos mares do sul com movimento orgânico gracioso e gemas de topázio imperial lapidadas.'
+    description: 'Pérolas barrocas naturais dos mares do sul com movimento orgânico gracioso e gemas de topázio imperial lapidadas.',
+    createdAt: '2026-10-28T10:00:03.000Z'
   },
   {
     id: 'bv-004',
@@ -106,7 +111,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=800&q=80',
     tag: 'Best Seller',
     material: 'Ouro Amarelo 18k com Moissanites D-Color VVS1',
-    description: 'Cravação em canaleta circular contínua simbolizando amor eterno. Moissanites com fogo e brilho ótico superior ao diamante.'
+    description: 'Cravação em canaleta circular contínua simbolizando amor eterno. Moissanites com fogo e brilho ótico superior ao diamante.',
+    createdAt: '2026-10-28T10:00:04.000Z'
   },
   {
     id: 'bv-005',
@@ -116,7 +122,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1611591475152-47354c8d0a45?auto=format&fit=crop&w=800&q=80',
     tag: 'Coleção Ouro 18k',
     material: 'Ouro Amarelo 18k (750) Maciço Italiano',
-    description: 'Malha trançada de ourivesaria florentina com caimento anatômico suave no colo e acabamento espelhado de alto polimento.'
+    description: 'Malha trançada de ourivesaria florentina com caimento anatômico suave no colo e acabamento espelhado de alto polimento.',
+    createdAt: '2026-10-28T10:00:05.000Z'
   },
   {
     id: 'bv-006',
@@ -126,7 +133,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80',
     tag: 'Semijoia Fina',
     material: 'Semijoia Alta Fusão com Banho Ouro 18k',
-    description: 'A clássica pulseira tênis com pedras selecionadas de zircônia cúbica AAA+ lapidação brilhante. Fecho de joalheria com duas travas.'
+    description: 'A clássica pulseira tênis com pedras selecionadas de zircônia cúbica AAA+ lapidação brilhante. Fecho de joalheria com duas travas.',
+    createdAt: '2026-10-28T10:00:06.000Z'
   },
   {
     id: 'bv-007',
@@ -136,7 +144,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?auto=format&fit=crop&w=800&q=80',
     tag: 'Alta Joalheria',
     material: 'Ouro Branco 18k e Safiras Azuis Naturais',
-    description: 'Design escultural que acompanha o contorno da orelha com gradiente de safiras azuis celestes e diamantes estelares.'
+    description: 'Design escultural que acompanha o contorno da orelha com gradiente de safiras azuis celestes e diamantes estelares.',
+    createdAt: '2026-10-28T10:00:07.000Z'
   },
   {
     id: 'bv-008',
@@ -146,7 +155,8 @@ const INITIAL_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
     tag: 'Coleção Ouro 18k',
     material: 'Ouro Rosé 18k (750)',
-    description: 'Bracelete rígido anatômico em Ouro Rosé 18k. Design minimalista com proporção imponente e fecho de encaixe invisível.'
+    description: 'Bracelete rígido anatômico em Ouro Rosé 18k. Design minimalista com proporção imponente e fecho de encaixe invisível.',
+    createdAt: '2026-10-28T10:00:08.000Z'
   }
 ];
 
@@ -164,7 +174,8 @@ const INITIAL_ATELIE_ORDERS = [
     descricao: 'Anel de noivado para pedido surpresa em Paris. Preferência por aro fino acetinado e diamante de 0.8ct redondo.',
     link: 'https://pinterest.com/pin/example1',
     status: 'Orçamento Enviado',
-    data: '27/10/2026 15:40'
+    data: '27/10/2026 15:40',
+    createdAt: '2026-10-27T15:40:00.000Z'
   },
   {
     id: 'AT-8913',
@@ -179,90 +190,707 @@ const INITIAL_ATELIE_ORDERS = [
     descricao: 'Alianças abauladas confortáveis com gravação interna da constelação do dia do primeiro encontro.',
     link: '',
     status: 'Em Produção',
-    data: '26/10/2026 11:15'
+    data: '26/10/2026 11:15',
+    createdAt: '2026-10-26T11:15:00.000Z'
   }
 ];
 
-// ================= SINCRONIZAÇÃO EM TEMPO REAL VIA BROADCASTCHANNEL =================
-const cmsBroadcast = new BroadcastChannel('bruna_valois_cms_sync');
+// ================= 2. ESTADO REATIVO ORIENTADO À NUVEM (SINGLE SOURCE OF TRUTH) =================
+// Proibida qualquer mutação local desvinculada do banco em nuvem.
+// As coleções globais abaixo são exclusivamente hidratadas via onSnapshot da nuvem:
+const appId = (typeof __app_id !== 'undefined' && __app_id) ? String(__app_id) : 'bruna-valois-joias';
 
-// Gerenciador de Armazenamento Local Reativo
+const CloudState = {
+  theme: { ...DEFAULT_THEME_CONFIG },
+  content: { ...DEFAULT_CONTENT_CONFIG },
+  payment: { ...DEFAULT_PAYMENT_CONFIG },
+  products: [],
+  customOrders: [],
+  isAuthenticated: false,
+  isConnected: false,
+  currentUser: null
+};
+
+// Sacola de compras do cliente (estado local da sessão de compra do visitante)
 const Storage = {
-  getTheme: () => JSON.parse(localStorage.getItem('BV_THEME_CONFIG')) || DEFAULT_THEME_CONFIG,
-  setTheme: (data) => {
-    localStorage.setItem('BV_THEME_CONFIG', JSON.stringify(data));
-    cmsBroadcast.postMessage({ type: 'THEME_SYNC', data });
+  getTheme: () => CloudState.theme,
+  getContent: () => CloudState.content,
+  getPayment: () => CloudState.payment,
+  getProducts: () => CloudState.products,
+  getAtelieOrders: () => CloudState.customOrders,
+
+  getCart: () => {
+    try {
+      return JSON.parse(localStorage.getItem('BV_CART')) || [];
+    } catch {
+      return [];
+    }
   },
-
-  getContent: () => JSON.parse(localStorage.getItem('BV_CONTENT_CONFIG')) || DEFAULT_CONTENT_CONFIG,
-  setContent: (data) => {
-    localStorage.setItem('BV_CONTENT_CONFIG', JSON.stringify(data));
-    cmsBroadcast.postMessage({ type: 'CONTENT_SYNC', data });
+  setCart: (data) => {
+    try {
+      localStorage.setItem('BV_CART', JSON.stringify(data));
+    } catch {}
   },
-
-  getPayment: () => JSON.parse(localStorage.getItem('BV_PAYMENT_CONFIG')) || DEFAULT_PAYMENT_CONFIG,
-  setPayment: (data) => {
-    localStorage.setItem('BV_PAYMENT_CONFIG', JSON.stringify(data));
-    cmsBroadcast.postMessage({ type: 'PAYMENT_SYNC', data });
-  },
-
-  getProducts: () => JSON.parse(localStorage.getItem('BV_PRODUCTS')) || INITIAL_PRODUCTS,
-  setProducts: (data) => {
-    localStorage.setItem('BV_PRODUCTS', JSON.stringify(data));
-    cmsBroadcast.postMessage({ type: 'PRODUCTS_SYNC', data });
-  },
-
-  getCart: () => JSON.parse(localStorage.getItem('BV_CART')) || [],
-  setCart: (data) => localStorage.setItem('BV_CART', JSON.stringify(data)),
-  saveCart: (data) => localStorage.setItem('BV_CART', JSON.stringify(data)),
-
-  getAtelieOrders: () => JSON.parse(localStorage.getItem('BV_ATELIE_ORDERS')) || INITIAL_ATELIE_ORDERS,
-  setAtelieOrders: (data) => {
-    localStorage.setItem('BV_ATELIE_ORDERS', JSON.stringify(data));
-    cmsBroadcast.postMessage({ type: 'ATELIE_SYNC', data });
+  saveCart: (data) => {
+    try {
+      localStorage.setItem('BV_CART', JSON.stringify(data));
+    } catch {}
   }
 };
 
-// Ouvinte de sincronização entre abas
-cmsBroadcast.onmessage = (event) => {
-  const { type } = event.data;
-  if (type === 'THEME_SYNC') applyTheme(Storage.getTheme(), false);
-  if (type === 'CONTENT_SYNC') applyContent(Storage.getContent(), false);
-  if (type === 'PAYMENT_SYNC') applyPaymentConfig(Storage.getPayment(), false);
-  if (type === 'PRODUCTS_SYNC') {
-    renderVitrine();
-    renderCmsProductsTable();
-  }
-  if (type === 'ATELIE_SYNC') renderCmsAtelieOrders();
-  showToast('Atualização sincronizada em tempo real!');
-};
+// ================= 3. CAMADA DE PERSISTÊNCIA EM NUVEM & SDK MODULAR (FIRESTORE v11+ / CLOUD REALTIME) =================
+/**
+ * Provedor Híbrido Unificado:
+ * - Quando __firebase_config está presente no ambiente, utiliza o Firebase Modular SDK v11+ oficial
+ *   (initializeApp, getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged,
+ *    getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot).
+ * - Quando executado no servidor central Node.js/Docker (ex: https://brunavalois.klynner.com.br),
+ *   executa a mesma interface modular sobre o motor Realtime Cloud Server (/api/cloud + SSE Stream)
+ *   compartilhado entre todos os computadores, celulares e navegadores conectados.
+ */
+let db = null;
+let auth = null;
+let firebaseNativeSdk = null;
+let sseEventSource = null;
+let sseReconnectTimer = null;
+const activeListeners = new Map(); // listenerId -> { ref, onNext, onError }
+const authStateSubscribers = new Set();
 
-// Fallback de Storage Event nativo do navegador
-window.addEventListener('storage', (e) => {
-  if (e.key?.startsWith('BV_')) {
-    applyTheme(Storage.getTheme(), false);
-    applyContent(Storage.getContent(), false);
-    applyPaymentConfig(Storage.getPayment(), false);
-    renderVitrine();
-    renderCmsProductsTable();
-    renderCmsAtelieOrders();
+function hasValidFirebaseEnvConfig() {
+  try {
+    const raw = (typeof __firebase_config !== 'undefined' && __firebase_config)
+      ? __firebase_config
+      : window.__firebase_config;
+    if (!raw) return false;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return Boolean(parsed && parsed.apiKey && parsed.projectId);
+  } catch {
+    return false;
   }
-});
+}
 
-// ================= GESTÃO DE TEMAS E IDENTIDADE VISUAL =================
-function applyTheme(theme, save = true) {
+async function loadFirebaseModularSdkIfConfigured() {
+  if (!hasValidFirebaseEnvConfig()) return null;
+  try {
+    const raw = (typeof __firebase_config !== 'undefined' && __firebase_config)
+      ? __firebase_config
+      : window.__firebase_config;
+    const firebaseConfig = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+    const [appMod, authMod, firestoreMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
+    ]);
+
+    const firebaseApp = appMod.initializeApp(firebaseConfig);
+    const firebaseAuth = authMod.getAuth(firebaseApp);
+    const firebaseDb = firestoreMod.getFirestore(firebaseApp);
+
+    return {
+      mode: 'firebase-v11',
+      app: firebaseApp,
+      auth: firebaseAuth,
+      db: firebaseDb,
+      ...authMod,
+      ...firestoreMod
+    };
+  } catch (err) {
+    console.warn('[CloudSDK] Falha ao carregar Firebase externo; utilizando motor Cloud Server central:', err.message);
+    return null;
+  }
+}
+
+// Implementação das primitivas Modulares (compatíveis 1:1 com Firestore Modular SDK v11+)
+function doc(database, ...pathSegments) {
+  if (firebaseNativeSdk && database === firebaseNativeSdk.db) {
+    return firebaseNativeSdk.doc(database, ...pathSegments);
+  }
+  const normalizedPath = '/' + pathSegments
+    .map(s => String(s).replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean)
+    .join('/');
+  const parts = normalizedPath.split('/').filter(Boolean);
+  return {
+    _type: 'doc',
+    id: parts[parts.length - 1],
+    path: normalizedPath
+  };
+}
+
+function collection(database, ...pathSegments) {
+  if (firebaseNativeSdk && database === firebaseNativeSdk.db) {
+    return firebaseNativeSdk.collection(database, ...pathSegments);
+  }
+  const normalizedPath = '/' + pathSegments
+    .map(s => String(s).replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean)
+    .join('/');
+  const parts = normalizedPath.split('/').filter(Boolean);
+  return {
+    _type: 'collection',
+    id: parts[parts.length - 1],
+    path: normalizedPath
+  };
+}
+
+function ensureCloudAuthenticated() {
+  if (!CloudState.isAuthenticated || !CloudState.currentUser) {
+    const error = new Error('Operação bloqueada: Handshake de autenticação com o banco em nuvem ainda não foi concluído.');
+    error.code = 'permission-denied';
+    throw error;
+  }
+}
+
+async function signInWithCustomToken(authInstance, customToken) {
+  if (firebaseNativeSdk && authInstance === firebaseNativeSdk.auth) {
+    return await firebaseNativeSdk.signInWithCustomToken(authInstance, customToken);
+  }
+  const res = await fetch('/api/cloud/auth/custom-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customToken })
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Falha na autenticação com token customizado.');
+    err.code = json.code || 'auth/invalid-custom-token';
+    throw err;
+  }
+  CloudState.currentUser = json.user;
+  CloudState.isAuthenticated = true;
+  notifyAuthStateSubscribers(json.user);
+  return { user: json.user };
+}
+
+async function signInAnonymously(authInstance) {
+  if (firebaseNativeSdk && authInstance === firebaseNativeSdk.auth) {
+    return await firebaseNativeSdk.signInAnonymously(authInstance);
+  }
+  const res = await fetch('/api/cloud/auth/anonymous', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Falha na autenticação anônima no banco central.');
+    err.code = json.code || 'auth/operation-not-allowed';
+    throw err;
+  }
+  CloudState.currentUser = json.user;
+  CloudState.isAuthenticated = true;
+  notifyAuthStateSubscribers(json.user);
+  return { user: json.user };
+}
+
+function onAuthStateChanged(authInstance, callback) {
+  if (firebaseNativeSdk && authInstance === firebaseNativeSdk.auth) {
+    return firebaseNativeSdk.onAuthStateChanged(authInstance, callback);
+  }
+  authStateSubscribers.add(callback);
+  if (CloudState.currentUser) {
+    setTimeout(() => callback(CloudState.currentUser), 0);
+  }
+  return () => authStateSubscribers.delete(callback);
+}
+
+function notifyAuthStateSubscribers(user) {
+  for (const cb of authStateSubscribers) {
+    try {
+      cb(user);
+    } catch (err) {
+      console.error('[CloudAuth] Erro no callback onAuthStateChanged:', err);
+    }
+  }
+}
+
+function getCloudAuthHeaders() {
+  ensureCloudAuthenticated();
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${CloudState.currentUser.token}`
+  };
+}
+
+async function getDoc(docRef) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !docRef._type) {
+    return await firebaseNativeSdk.getDoc(docRef);
+  }
+  const res = await fetch(`/api/cloud/doc?path=${encodeURIComponent(docRef.path)}`, {
+    method: 'GET',
+    headers: getCloudAuthHeaders()
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Erro ao ler documento da nuvem.');
+    err.code = json.code || 'permission-denied';
+    throw err;
+  }
+  return {
+    id: json.id,
+    exists: () => Boolean(json.exists),
+    data: () => json.data
+  };
+}
+
+async function getDocs(colRef) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !colRef._type) {
+    return await firebaseNativeSdk.getDocs(colRef);
+  }
+  const res = await fetch(`/api/cloud/collection?path=${encodeURIComponent(colRef.path)}`, {
+    method: 'GET',
+    headers: getCloudAuthHeaders()
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Erro ao ler coleção da nuvem.');
+    err.code = json.code || 'permission-denied';
+    throw err;
+  }
+  const docSnapshots = (json.docs || []).map(d => ({
+    id: d.id,
+    exists: () => true,
+    data: () => d.data
+  }));
+  return {
+    empty: Boolean(json.empty),
+    size: Number(json.size || docSnapshots.length),
+    docs: docSnapshots,
+    forEach: (cb) => docSnapshots.forEach(cb)
+  };
+}
+
+async function setDoc(docRef, payload, options = { merge: false }) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !docRef._type) {
+    return await firebaseNativeSdk.setDoc(docRef, payload, options);
+  }
+  const res = await fetch('/api/cloud/doc', {
+    method: 'PUT',
+    headers: getCloudAuthHeaders(),
+    body: JSON.stringify({
+      path: docRef.path,
+      data: payload,
+      options
+    })
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Falha ao gravar documento no banco em nuvem.');
+    err.code = json.code || 'permission-denied';
+    throw err;
+  }
+  return json;
+}
+
+async function updateDoc(docRef, partialData) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !docRef._type) {
+    return await firebaseNativeSdk.updateDoc(docRef, partialData);
+  }
+  const res = await fetch('/api/cloud/doc', {
+    method: 'PATCH',
+    headers: getCloudAuthHeaders(),
+    body: JSON.stringify({
+      path: docRef.path,
+      data: partialData
+    })
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Falha ao atualizar documento no banco em nuvem.');
+    err.code = json.code || 'permission-denied';
+    throw err;
+  }
+  return json;
+}
+
+async function deleteDoc(docRef) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !docRef._type) {
+    return await firebaseNativeSdk.deleteDoc(docRef);
+  }
+  const res = await fetch(`/api/cloud/doc?path=${encodeURIComponent(docRef.path)}`, {
+    method: 'DELETE',
+    headers: getCloudAuthHeaders()
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const err = new Error(json.message || 'Falha ao excluir documento no banco em nuvem.');
+    err.code = json.code || 'permission-denied';
+    throw err;
+  }
+  return json;
+}
+
+function onSnapshot(targetRef, onNext, onError) {
+  ensureCloudAuthenticated();
+  if (firebaseNativeSdk && !targetRef._type) {
+    return firebaseNativeSdk.onSnapshot(targetRef, onNext, onError);
+  }
+
+  const listenerId = `lst_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  activeListeners.set(listenerId, {
+    ref: targetRef,
+    onNext,
+    onError
+  });
+
+  // Garante que o canal SSE em tempo real esteja conectado
+  ensureRealtimeStreamConnected();
+
+  // Hidratação imediata na assinatura do listener
+  if (targetRef._type === 'doc') {
+    getDoc(targetRef).then(snap => onNext(snap)).catch(err => {
+      if (onError) onError(err);
+    });
+  } else if (targetRef._type === 'collection') {
+    getDocs(targetRef).then(snap => onNext(snap)).catch(err => {
+      if (onError) onError(err);
+    });
+  }
+
+  return () => {
+    activeListeners.delete(listenerId);
+  };
+}
+
+function ensureRealtimeStreamConnected() {
+  if (firebaseNativeSdk) return;
+  if (sseEventSource && sseEventSource.readyState !== EventSource.CLOSED) return;
+  if (!CloudState.isAuthenticated || !CloudState.currentUser?.token) return;
+
+  const streamUrl = `/api/cloud/stream?appId=${encodeURIComponent(appId)}&token=${encodeURIComponent(CloudState.currentUser.token)}`;
+  sseEventSource = new EventSource(streamUrl);
+
+  sseEventSource.addEventListener('connected', () => {
+    updateCloudConnectionStatus('connected');
+    hideCloudPermissionError();
+  });
+
+  sseEventSource.addEventListener('snapshot', (event) => {
+    updateCloudConnectionStatus('connected');
+    try {
+      const payload = JSON.parse(event.data);
+      dispatchRealtimeSnapshotToListeners(payload);
+    } catch (err) {
+      console.error('[CloudRealtime] Erro ao processar pacote snapshot:', err);
+    }
+  });
+
+  sseEventSource.onerror = () => {
+    updateCloudConnectionStatus('reconnecting');
+    if (sseEventSource) {
+      sseEventSource.close();
+      sseEventSource = null;
+    }
+    if (sseReconnectTimer) clearTimeout(sseReconnectTimer);
+    sseReconnectTimer = setTimeout(() => {
+      ensureRealtimeStreamConnected();
+    }, 2500);
+  };
+}
+
+function dispatchRealtimeSnapshotToListeners(payload) {
+  for (const [, listener] of activeListeners.entries()) {
+    const { ref, onNext } = listener;
+    if (payload.kind === 'doc' && ref._type === 'doc' && ref.path === payload.path) {
+      const docSnap = {
+        id: payload.id,
+        exists: () => Boolean(payload.exists),
+        data: () => payload.data
+      };
+      onNext(docSnap);
+    } else if (payload.kind === 'collection' && ref._type === 'collection' && ref.path === payload.path) {
+      const docSnapshots = (payload.docs || []).map(d => ({
+        id: d.id,
+        exists: () => true,
+        data: () => d.data
+      }));
+      const colSnap = {
+        empty: Boolean(payload.empty),
+        size: Number(payload.size || docSnapshots.length),
+        docs: docSnapshots,
+        forEach: (cb) => docSnapshots.forEach(cb)
+      };
+      onNext(colSnap);
+    }
+  }
+}
+
+// ================= 4. INDICADOR VISUAL DE CONECTIVIDADE E TRATAMENTO DE ERROS =================
+function updateCloudConnectionStatus(status) {
+  const isConnected = status === 'connected';
+  CloudState.isConnected = isConnected;
+
+  const connectedText = 'Sincronizado na Nuvem (Tempo Real Global)';
+  const disconnectedText = 'Tentando restabelecer conexão com o banco central...';
+  const labelText = isConnected ? connectedText : disconnectedText;
+
+  // 1. Indicador na Barra Superior
+  const badgeTop = document.getElementById('cloudSyncBadgeTop');
+  const dotTop = document.getElementById('cloudSyncDotTop');
+  const textTop = document.getElementById('cloudSyncTextTop');
+  if (badgeTop && dotTop && textTop) {
+    textTop.innerText = labelText;
+    if (isConnected) {
+      badgeTop.className = 'inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold tracking-wider transition-all duration-300';
+      dotTop.className = 'w-2 h-2 rounded-full bg-emerald-400 pulse-beacon';
+    } else {
+      badgeTop.className = 'inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-950/90 border border-amber-500/40 text-amber-300 text-[10px] font-semibold tracking-wider transition-all duration-300';
+      dotTop.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
+    }
+  }
+
+  // 2. Indicador Acima da Vitrine
+  const badgeVitrine = document.getElementById('cloudSyncBadgeVitrine');
+  const dotVitrine = document.getElementById('cloudSyncDotVitrine');
+  const textVitrine = document.getElementById('cloudSyncTextVitrine');
+  if (badgeVitrine && dotVitrine && textVitrine) {
+    textVitrine.innerText = labelText;
+    if (isConnected) {
+      badgeVitrine.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] font-semibold mb-4 shadow-sm transition-all duration-300';
+      dotVitrine.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-beacon';
+    } else {
+      badgeVitrine.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-semibold mb-4 shadow-sm transition-all duration-300';
+      dotVitrine.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping';
+    }
+  }
+
+  // 3. Indicador no Header do Painel CMS
+  const dotCms = document.getElementById('cloudSyncDotCms');
+  const textCms = document.getElementById('cloudSyncTextCms');
+  if (dotCms && textCms) {
+    textCms.innerText = labelText;
+    dotCms.className = isConnected
+      ? 'w-2 h-2 rounded-full bg-emerald-500 pulse-beacon'
+      : 'w-2 h-2 rounded-full bg-amber-500 animate-ping';
+  }
+}
+
+function showCloudPermissionError(contextLabel, error) {
+  console.error(`[CloudSecurity] Erro em "${contextLabel}":`, error);
+  updateCloudConnectionStatus('reconnecting');
+
+  const banner = document.getElementById('cloudPermissionAlertBanner');
+  const textEl = document.getElementById('cloudPermissionAlertText');
+  const msg = `Erro de sincronização na nuvem (${contextLabel}): ${error?.message || 'Permissão negada ou falha de rede'}. Nenhuma mutação local foi realizada.`;
+
+  if (banner && textEl) {
+    textEl.innerText = msg;
+    banner.classList.remove('hidden');
+  }
+  showToast(msg, 'fa-exclamation-triangle');
+}
+
+function hideCloudPermissionError() {
+  const banner = document.getElementById('cloudPermissionAlertBanner');
+  if (banner) banner.classList.add('hidden');
+}
+
+// ================= 5. SEEDING GLOBAL DETERMINÍSTICO & LISTENERS EM TEMPO REAL =================
+async function seedInitialCloudData() {
+  ensureCloudAuthenticated();
+
+  const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+  const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+  const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_orders');
+
+  // 1. Verificar se o documento mestre site_config/main existe na nuvem
+  const configSnap = await getDoc(configDocRef);
+  if (!configSnap.exists()) {
+    await setDoc(configDocRef, {
+      theme: DEFAULT_THEME_CONFIG,
+      content: DEFAULT_CONTENT_CONFIG,
+      payment: DEFAULT_PAYMENT_CONFIG,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  }
+
+  // 2. Verificar se a coleção global de produtos está vazia
+  const productsSnap = await getDocs(productsColRef);
+  if (productsSnap.empty) {
+    for (const product of INITIAL_PRODUCTS) {
+      const prodDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id);
+      await setDoc(prodDocRef, product, { merge: true });
+    }
+  }
+
+  // 3. Verificar se a coleção global de encomendas sob medida está vazia
+  const ordersSnap = await getDocs(ordersColRef);
+  if (ordersSnap.empty) {
+    for (const order of INITIAL_ATELIE_ORDERS) {
+      const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_orders', order.id);
+      await setDoc(orderDocRef, order, { merge: true });
+    }
+  }
+}
+
+function setupRealtimeListeners() {
+  ensureCloudAuthenticated();
+
+  const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+  const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+  const customOrdersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_orders');
+
+  // 1. Ouvinte Contínuo: Documento Mestre de Configuração (site_config/main)
+  onSnapshot(
+    configDocRef,
+    (docSnap) => {
+      updateCloudConnectionStatus('connected');
+      if (docSnap.exists()) {
+        const data = docSnap.data() || {};
+        if (data.theme) {
+          CloudState.theme = { ...DEFAULT_THEME_CONFIG, ...data.theme };
+          applyThemeToDOM(CloudState.theme);
+        }
+        if (data.content) {
+          CloudState.content = { ...DEFAULT_CONTENT_CONFIG, ...data.content };
+          applyContentToDOM(CloudState.content);
+        }
+        if (data.payment) {
+          CloudState.payment = { ...DEFAULT_PAYMENT_CONFIG, ...data.payment };
+          applyPaymentConfigToDOM(CloudState.payment);
+        }
+        renderVitrine();
+        renderCart();
+      }
+    },
+    (error) => {
+      showCloudPermissionError('site_config/main', error);
+    }
+  );
+
+  // 2. Ouvinte Contínuo: Coleção Global de Produtos (products)
+  onSnapshot(
+    productsColRef,
+    (snapshot) => {
+      updateCloudConnectionStatus('connected');
+      const remoteProducts = [];
+      snapshot.forEach((docSnap) => {
+        const item = docSnap.data();
+        if (item) {
+          remoteProducts.push({ ...item, id: item.id || docSnap.id });
+        }
+      });
+
+      // Ordena mantendo os mais recentes ou ordem determinística de catálogo
+      remoteProducts.sort((a, b) => {
+        if (a.createdAt && b.createdAt && a.createdAt !== b.createdAt) {
+          return String(b.createdAt).localeCompare(String(a.createdAt));
+        }
+        return String(a.id).localeCompare(String(b.id));
+      });
+
+      CloudState.products = remoteProducts;
+      renderVitrine();
+      renderCmsProductsTable();
+    },
+    (error) => {
+      showCloudPermissionError('products', error);
+    }
+  );
+
+  // 3. Ouvinte Contínuo: Coleção Global de Encomendas Sob Medida (custom_orders)
+  onSnapshot(
+    customOrdersColRef,
+    (snapshot) => {
+      updateCloudConnectionStatus('connected');
+      const remoteOrders = [];
+      snapshot.forEach((docSnap) => {
+        const order = docSnap.data();
+        if (order) {
+          remoteOrders.push({ ...order, id: order.id || docSnap.id });
+        }
+      });
+
+      remoteOrders.sort((a, b) => {
+        const tA = a.createdAt || a.updatedAt || '';
+        const tB = b.createdAt || b.updatedAt || '';
+        return String(tB).localeCompare(String(tA));
+      });
+
+      CloudState.customOrders = remoteOrders;
+      renderCmsAtelieOrders();
+    },
+    (error) => {
+      showCloudPermissionError('custom_orders', error);
+    }
+  );
+}
+
+/**
+ * Ciclo de Autenticação Prévia Garantida:
+ * Nenhuma leitura ou escrita no banco é disparada antes da resolução explícita do handshake.
+ */
+async function initCloudPersistenceEngine() {
+  updateCloudConnectionStatus('reconnecting');
+
+  try {
+    firebaseNativeSdk = await loadFirebaseModularSdkIfConfigured();
+    if (firebaseNativeSdk) {
+      db = firebaseNativeSdk.db;
+      auth = firebaseNativeSdk.auth;
+    } else {
+      db = { _engine: 'cloud-realtime-server', appId };
+      auth = { _engine: 'cloud-realtime-server', appId };
+    }
+
+    // Registra o listener de estado de autenticação antes do handshake
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        CloudState.isAuthenticated = false;
+        updateCloudConnectionStatus('reconnecting');
+        return;
+      }
+
+      CloudState.currentUser = user;
+      CloudState.isAuthenticated = true;
+
+      try {
+        await seedInitialCloudData();
+        setupRealtimeListeners();
+        updateCloudConnectionStatus('connected');
+      } catch (seedErr) {
+        showCloudPermissionError('Inicialização/Seeding', seedErr);
+      }
+    });
+
+    // Handshake explícito via Custom Token ou Sessão Anônima
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+      await signInWithCustomToken(auth, __initial_auth_token);
+    } else {
+      await signInAnonymously(auth);
+    }
+  } catch (authError) {
+    showCloudPermissionError('Autenticação na Nuvem', authError);
+  }
+}
+
+// ================= 6. APLICAÇÃO REATIVA DE TEMAS, CONTEÚDOS E PAGAMENTOS NO DOM =================
+function applyThemeToDOM(theme) {
+  if (!theme) return;
   const root = document.documentElement;
-  
+
+  // Variáveis CSS root exigidas (--bv-* e --color-*)
+  root.style.setProperty('--bv-primary', theme.colorPrimary);
+  root.style.setProperty('--bv-accent', theme.colorAccent);
+  root.style.setProperty('--bv-bg', theme.colorBg);
+  root.style.setProperty('--bv-card-bg', theme.colorCardBg);
+  root.style.setProperty('--bv-text', theme.colorText);
+
   root.style.setProperty('--color-primary', theme.colorPrimary);
   root.style.setProperty('--color-accent', theme.colorAccent);
   root.style.setProperty('--color-bg', theme.colorBg);
   root.style.setProperty('--color-card-bg', theme.colorCardBg);
   root.style.setProperty('--color-text', theme.colorText);
-  
+
   // Tipografia
   let headingFont = "'Playfair Display', serif";
   let bodyFont = "'Montserrat', sans-serif";
-  
+
   if (theme.fontFamily === 'cormorant') {
     headingFont = "'Cormorant Garamond', serif";
     bodyFont = "'Inter', sans-serif";
@@ -270,7 +898,9 @@ function applyTheme(theme, save = true) {
     headingFont = "'Cinzel', serif";
     bodyFont = "'Montserrat', sans-serif";
   }
-  
+
+  root.style.setProperty('--bv-font-heading', headingFont);
+  root.style.setProperty('--bv-font-body', bodyFont);
   root.style.setProperty('--font-heading', headingFont);
   root.style.setProperty('--font-body', bodyFont);
 
@@ -315,15 +945,28 @@ function applyTheme(theme, save = true) {
       }
     }
   });
-
-  if (save) Storage.setTheme(theme);
 }
 
-function applyThemePreset(presetKey) {
-  if (THEME_PRESETS[presetKey]) {
-    const newTheme = { ...THEME_PRESETS[presetKey], preset: presetKey };
-    applyTheme(newTheme, true);
-    showToast(`Preset "${presetKey.toUpperCase()}" aplicado com sucesso!`);
+function applyTheme(theme) {
+  applyThemeToDOM(theme);
+}
+
+async function applyThemePreset(presetKey) {
+  if (!THEME_PRESETS[presetKey]) return;
+  const newTheme = { ...THEME_PRESETS[presetKey], preset: presetKey };
+  // Preenche os seletores do formulário CMS e publica na nuvem imediatamente
+  applyThemeToDOM(newTheme);
+
+  try {
+    ensureCloudAuthenticated();
+    const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+    await setDoc(configDocRef, {
+      theme: newTheme,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    showToast(`Preset "${presetKey.toUpperCase()}" publicado globalmente na nuvem!`);
+  } catch (err) {
+    showCloudPermissionError('Aplicar Preset de Tema', err);
   }
 }
 
@@ -341,8 +984,8 @@ function toggleTokenVisibility() {
   }
 }
 
-// ================= GESTÃO DE CONTEÚDOS =================
-function applyContent(content, save = true) {
+function applyContentToDOM(content) {
+  if (!content) return;
   const elTopAnnouncement = document.getElementById('topAnnouncementText');
   const elHeroTitle = document.getElementById('heroTitle');
   const elHeroSubtitle = document.getElementById('heroSubtitle');
@@ -356,10 +999,12 @@ function applyContent(content, save = true) {
   if (elHeroSubtitle) elHeroSubtitle.innerText = content.heroSubtitle;
   if (elHeroImage) elHeroImage.src = content.heroImage;
   if (elAboutBrand) elAboutBrand.innerText = content.aboutBrand;
-  
-  const cleanPhone = content.whatsappNumber.replace(/\D/g, '');
+
+  const cleanPhone = String(content.whatsappNumber || '5511999999999').replace(/\D/g, '');
   if (elTopWhatsApp) elTopWhatsApp.href = `https://wa.me/${cleanPhone}`;
-  if (elFooterPhone) elFooterPhone.innerText = `+${cleanPhone.slice(0, 2)} (${cleanPhone.slice(2, 4)}) ${cleanPhone.slice(4, 9)}-${cleanPhone.slice(9)}`;
+  if (elFooterPhone && cleanPhone.length >= 12) {
+    elFooterPhone.innerText = `+${cleanPhone.slice(0, 2)} (${cleanPhone.slice(2, 4)}) ${cleanPhone.slice(4, 9)}-${cleanPhone.slice(9)}`;
+  }
 
   // Atualizar inputs do CMS
   const inpAnn = document.getElementById('cmsInputAnnouncement');
@@ -375,18 +1020,19 @@ function applyContent(content, save = true) {
   if (inpHeroImg) inpHeroImg.value = content.heroImage;
   if (inpAbout) inpAbout.value = content.aboutBrand;
   if (inpPhone) inpPhone.value = content.whatsappNumber;
-
-  if (save) Storage.setContent(content);
 }
 
-// ================= GESTÃO DE PAGAMENTO MERCADO PAGO =================
-function applyPaymentConfig(payment, save = true) {
+function applyContent(content) {
+  applyContentToDOM(content);
+}
+
+function applyPaymentConfigToDOM(payment) {
+  if (!payment) return;
   const elInstallmentBadge = document.getElementById('trustInstallmentText');
   if (elInstallmentBadge) {
     elInstallmentBadge.innerText = `Até ${payment.maxInstallmentsWithoutInterest}x Sem Juros no Mercado Pago`;
   }
 
-  // Preencher inputs CMS
   const elCheckoutUrl = document.getElementById('cmsMpCheckoutUrl');
   const elKey = document.getElementById('cmsMpPublicKey');
   const elToken = document.getElementById('cmsMpAccessToken');
@@ -400,11 +1046,13 @@ function applyPaymentConfig(payment, save = true) {
   if (elEnv) elEnv.value = payment.environment || 'production';
   if (elInst) elInst.value = payment.maxInstallmentsWithoutInterest || 10;
   if (elPix) elPix.value = payment.pixKey || '';
-
-  if (save) Storage.setPayment(payment);
 }
 
-// ================= VITRINE & CATÁLOGO DINÂMICO =================
+function applyPaymentConfig(payment) {
+  applyPaymentConfigToDOM(payment);
+}
+
+// ================= 7. VITRINE & CATÁLOGO DINÂMICO =================
 let currentCategoryFilter = 'all';
 let currentSearchTerm = '';
 let currentSortOrder = 'default';
@@ -417,24 +1065,22 @@ function renderVitrine() {
   const products = Storage.getProducts();
   const paymentConfig = Storage.getPayment();
 
-  // Filtragem
   let filtered = products.filter(item => {
     const matchCategory = currentCategoryFilter === 'all' || item.category === currentCategoryFilter;
-    const matchSearch = currentSearchTerm === '' || 
-      item.name.toLowerCase().includes(currentSearchTerm) ||
-      item.material.toLowerCase().includes(currentSearchTerm) ||
+    const matchSearch = currentSearchTerm === '' ||
+      (item.name && item.name.toLowerCase().includes(currentSearchTerm)) ||
+      (item.material && item.material.toLowerCase().includes(currentSearchTerm)) ||
       (item.tag && item.tag.toLowerCase().includes(currentSearchTerm)) ||
-      item.description.toLowerCase().includes(currentSearchTerm);
+      (item.description && item.description.toLowerCase().includes(currentSearchTerm));
     return matchCategory && matchSearch;
   });
 
-  // Ordenação
   if (currentSortOrder === 'price-asc') {
-    filtered.sort((a, b) => a.price - b.price);
+    filtered.sort((a, b) => Number(a.price) - Number(b.price));
   } else if (currentSortOrder === 'price-desc') {
-    filtered.sort((a, b) => b.price - a.price);
+    filtered.sort((a, b) => Number(b.price) - Number(a.price));
   } else if (currentSortOrder === 'name-asc') {
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    filtered.sort((a, b) => String(a.name).localeCompare(String(b.name)));
   }
 
   if (filtered.length === 0) {
@@ -446,30 +1092,25 @@ function renderVitrine() {
   emptyState?.classList.add('hidden');
 
   grid.innerHTML = filtered.map(product => {
+    const priceNum = Number(product.price) || 0;
     const maxInst = paymentConfig.maxInstallmentsWithoutInterest || 10;
-    const instValue = (product.price / maxInst).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const formattedPrice = product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const instValue = (priceNum / maxInst).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formattedPrice = priceNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     return `
       <div class="product-card group bg-white rounded-2xl overflow-hidden border border-stone-200/90 shadow-sm flex flex-col justify-between" data-id="${product.id}">
-        <!-- Imagem e Tag -->
         <div class="product-image-container relative aspect-square overflow-hidden bg-stone-100 cursor-pointer" onclick="openProductDetail('${product.id}')">
           <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
-          
-          <!-- Tag de Destaque -->
           ${product.tag ? `
             <span class="absolute top-3 left-3 bg-stone-900/90 text-[#C5A059] border border-[#C5A059]/40 text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md">
               ${product.tag}
             </span>
           ` : ''}
-
-          <!-- Botão Quick View Flutuante -->
           <button class="absolute bottom-3 inset-x-3 py-2 bg-stone-950/80 backdrop-blur-md text-white text-xs uppercase tracking-wider font-semibold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1.5 hover:bg-stone-900">
             <i class="fas fa-eye text-xs text-[#C5A059]"></i> Detalhes da Joia
           </button>
         </div>
 
-        <!-- Informações do Produto -->
         <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
           <div>
             <span class="text-[10px] uppercase tracking-widest text-[#C5A059] font-bold block mb-1">
@@ -481,13 +1122,11 @@ function renderVitrine() {
             <p class="text-[11px] text-stone-500 line-clamp-1 mt-1">${product.material}</p>
           </div>
 
-          <!-- Preço e Parcelas -->
           <div class="pt-2 border-t border-stone-100">
             <span class="text-xl font-heading font-bold text-stone-900 block">${formattedPrice}</span>
             <p class="text-[11px] text-stone-500">ou até <strong class="text-stone-700 font-semibold">${maxInst}x de R$ ${instValue}</strong> sem juros</p>
           </div>
 
-          <!-- Ação de Compra Rápida -->
           <button onclick="addToCart('${product.id}', true)" class="w-full py-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-2 group-hover:bg-gold-gradient group-hover:text-stone-950 shadow-sm">
             <i class="fas fa-shopping-bag text-xs"></i> Comprar Agora
           </button>
@@ -501,11 +1140,11 @@ function resetFilters() {
   currentCategoryFilter = 'all';
   currentSearchTerm = '';
   currentSortOrder = 'default';
-  
+
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = '';
   document.getElementById('clearSearchBtn')?.classList.add('hidden');
-  
+
   document.querySelectorAll('.category-btn').forEach(btn => {
     btn.classList.remove('bg-stone-900', 'text-white', 'border-stone-900');
     btn.classList.add('bg-white', 'text-stone-700', 'border-stone-200');
@@ -521,7 +1160,7 @@ function resetFilters() {
   renderVitrine();
 }
 
-// ================= SACOLA DE COMPRAS (DRAWER & REGRAS) =================
+// ================= 8. SACOLA DE COMPRAS (DRAWER & REGRAS) =================
 let activeCoupon = null;
 const FREE_SHIPPING_THRESHOLD = 450.00;
 
@@ -566,7 +1205,6 @@ function addToCart(productId, openDrawer = true) {
   updateCartBadge();
   showToast(`"${product.name}" adicionado à sacola!`);
 
-  // Animar badge da sacola
   const badge = document.getElementById('cartBadge');
   if (badge) {
     badge.classList.add('scale-150');
@@ -633,7 +1271,7 @@ function renderCart() {
   let subtotal = 0;
 
   cartList.innerHTML = cart.map(item => {
-    const itemTotal = item.price * item.quantity;
+    const itemTotal = Number(item.price) * Number(item.quantity);
     subtotal += itemTotal;
     const formattedItemTotal = itemTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -663,7 +1301,6 @@ function renderCart() {
     `;
   }).join('');
 
-  // Cálculo de desconto e totais
   let discountAmount = 0;
   if (activeCoupon) {
     discountAmount = subtotal * activeCoupon.discount;
@@ -688,7 +1325,7 @@ function renderCart() {
 function updateFreeShippingBar(subtotal) {
   const percent = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  
+
   const elBar = document.getElementById('freeShippingBar');
   const elLabel = document.getElementById('freeShippingLabel');
   const elPercent = document.getElementById('freeShippingPercent');
@@ -705,7 +1342,6 @@ function updateFreeShippingBar(subtotal) {
   }
 }
 
-// Cupom de Desconto
 function applyCoupon() {
   const input = document.getElementById('couponInput');
   const feedback = document.getElementById('couponAppliedFeedback');
@@ -722,11 +1358,253 @@ function applyCoupon() {
   }
 }
 
-// ================= INTEGRAÇÃO MERCADO PAGO OFICIAL =================
-let pixPollingInterval = null;
-let currentPixOrderId = null;
+// ================= 9. MODAL EMBUTIDO OFICIAL MERCADO PAGO (PIX, CARTÃO & SALDO) =================
+let pixCountdownInterval = null;
+let lastOrderData = null;
 
-// Consulta a configuração pública do servidor (ambiente, modo sandbox, public key)
+function openMercadoPagoCheckout() {
+  const cart = Storage.getCart();
+  if (cart.length === 0) {
+    showToast('Adicione ao menos uma joia à sacola antes de finalizar.');
+    return;
+  }
+
+  closeCart();
+
+  const modal = document.getElementById('mercadoPagoModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.firstElementChild?.classList.remove('scale-95');
+    }, 10);
+  }
+
+  const subtotal = cart.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0);
+  const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
+  const total = Math.max(0, subtotal - discount);
+
+  const formattedTotal = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const elMpPay = document.getElementById('mpPayAmount');
+  const elCardBtn = document.getElementById('cardPayBtnText');
+  const elBalanceAmt = document.getElementById('mpBalancePayAmount');
+
+  if (elMpPay) elMpPay.innerText = formattedTotal;
+  if (elCardBtn) elCardBtn.innerText = `Pagar ${formattedTotal} com Mercado Pago`;
+  if (elBalanceAmt) elBalanceAmt.innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+  generatePixPayment(total);
+  setupCardInstallments(total);
+  switchMpTab('pix');
+}
+
+function closeMercadoPagoCheckout() {
+  const modal = document.getElementById('mercadoPagoModal');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    modal.firstElementChild?.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+  }
+  if (pixCountdownInterval) clearInterval(pixCountdownInterval);
+}
+
+function switchMpTab(tab) {
+  const tabPix = document.getElementById('mpTabPix');
+  const tabCard = document.getElementById('mpTabCard');
+  const tabBalance = document.getElementById('mpTabBalance');
+
+  const viewPix = document.getElementById('mpViewPix');
+  const viewCard = document.getElementById('mpViewCard');
+  const viewBalance = document.getElementById('mpViewBalance');
+
+  [tabPix, tabCard, tabBalance].forEach(t => {
+    if (!t) return;
+    t.classList.remove('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
+    t.classList.add('border-transparent', 'text-stone-600');
+  });
+
+  [viewPix, viewCard, viewBalance].forEach(v => v?.classList.add('hidden'));
+
+  if (tab === 'pix') {
+    tabPix?.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
+    tabPix?.classList.remove('border-transparent', 'text-stone-600');
+    viewPix?.classList.remove('hidden');
+  } else if (tab === 'card') {
+    tabCard?.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
+    tabCard?.classList.remove('border-transparent', 'text-stone-600');
+    viewCard?.classList.remove('hidden');
+  } else if (tab === 'balance') {
+    tabBalance?.classList.add('border-[#009EE3]', 'text-[#009EE3]', 'font-bold');
+    tabBalance?.classList.remove('border-transparent', 'text-stone-600');
+    viewBalance?.classList.remove('hidden');
+  }
+}
+
+function generatePixPayment(amount) {
+  const paymentConfig = Storage.getPayment();
+  const pixContainer = document.getElementById('mpPixQrCodeContainer');
+  if (!pixContainer) return;
+
+  pixContainer.innerHTML = '';
+
+  const cleanAmount = Number(amount).toFixed(2);
+  const pixKey = paymentConfig.pixKey || '45.892.102/0001-44';
+  const pixPayload = `00020126580014br.gov.bcb.pix0136${pixKey}520400005303986540${cleanAmount.length}${cleanAmount}5802BR5925BRUNA VALOIS JOIAS6009SAO PAULO62070503***6304`;
+
+  const codeInput = document.getElementById('mpPixCodeInput');
+  if (codeInput) codeInput.value = pixPayload;
+
+  try {
+    new QRCode(pixContainer, {
+      text: pixPayload,
+      width: 160,
+      height: 160,
+      colorDark: '#1C1917',
+      colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch {
+    pixContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(pixPayload)}" alt="QR Code PIX" class="w-40 h-40">`;
+  }
+
+  if (pixCountdownInterval) clearInterval(pixCountdownInterval);
+  let timeLeft = 15 * 60;
+  const timerEl = document.getElementById('pixTimer');
+  pixCountdownInterval = setInterval(() => {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    if (timerEl) {
+      timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    if (timeLeft <= 0) {
+      clearInterval(pixCountdownInterval);
+      if (timerEl) timerEl.innerText = 'Expirado';
+    }
+  }, 1000);
+}
+
+function copyMpPixCode() {
+  const input = document.getElementById('mpPixCodeInput');
+  const feedback = document.getElementById('mpPixCopiedFeedback');
+  if (!input) return;
+
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    feedback?.classList.remove('hidden');
+    showToast('Código PIX Copia e Cola copiado com sucesso!');
+    setTimeout(() => feedback?.classList.add('hidden'), 3500);
+  });
+}
+
+function setupCardInstallments(total) {
+  const select = document.getElementById('cardInstallmentsSelect');
+  if (!select) return;
+
+  const paymentConfig = Storage.getPayment();
+  const maxWithoutInterest = Number(paymentConfig.maxInstallmentsWithoutInterest) || 10;
+
+  select.innerHTML = '';
+
+  for (let i = 1; i <= 12; i++) {
+    let installmentValue = 0;
+    let label = '';
+
+    if (i <= maxWithoutInterest) {
+      installmentValue = total / i;
+      label = `${i}x de R$ ${installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} sem juros (Total: ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+    } else {
+      const interestRate = 0.0199;
+      const totalWithInterest = total * Math.pow(1 + interestRate, i);
+      installmentValue = totalWithInterest / i;
+      label = `${i}x de R$ ${installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} com juros (Total: ${totalWithInterest.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+    }
+
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.innerText = label;
+    select.appendChild(opt);
+  }
+}
+
+function handleCardNumberInput(e) {
+  let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+  let formatted = '';
+  for (let i = 0; i < val.length; i++) {
+    if (i > 0 && i % 4 === 0) formatted += ' ';
+    formatted += val[i];
+  }
+  e.target.value = formatted;
+
+  const previewNum = document.getElementById('cardPreviewNumber');
+  if (previewNum) {
+    previewNum.innerText = formatted ? formatted.padEnd(19, '•') : '•••• •••• •••• ••••';
+  }
+  detectCardBrand(val);
+}
+
+function detectCardBrand(num) {
+  const icon = document.getElementById('cardBrandIcon');
+  const badge = document.getElementById('cardInputBrandBadge');
+  if (!icon || !badge) return;
+
+  let brandIconHtml = '<i class="fas fa-credit-card"></i>';
+  if (num.startsWith('4')) {
+    brandIconHtml = '<i class="fab fa-cc-visa text-blue-400"></i>';
+  } else if (/^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[01]|2720)/.test(num)) {
+    brandIconHtml = '<i class="fab fa-cc-mastercard text-amber-500"></i>';
+  } else if (/^3[47]/.test(num)) {
+    brandIconHtml = '<i class="fab fa-cc-amex text-sky-400"></i>';
+  } else if (/^(4011|4389|5067|5090)/.test(num)) {
+    brandIconHtml = '<span class="font-bold text-xs bg-red-600 text-white px-1.5 py-0.5 rounded">ELO</span>';
+  }
+  icon.innerHTML = brandIconHtml;
+  badge.innerHTML = brandIconHtml;
+}
+
+function finalizePurchase(paymentMethodName) {
+  const cart = Storage.getCart();
+  if (cart.length === 0) return;
+
+  const subtotal = cart.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0);
+  const discount = activeCoupon ? subtotal * activeCoupon.discount : 0;
+  const total = Math.max(0, subtotal - discount);
+
+  const transactionId = `#MP-${Math.floor(10000000 + Math.random() * 90000000)}`;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  lastOrderData = {
+    transactionId,
+    dateStr,
+    method: paymentMethodName,
+    items: [...cart],
+    total,
+    formattedTotal: total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  };
+
+  closeMercadoPagoCheckout();
+  openReceiptModal(lastOrderData);
+
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#C5A059', '#DFBA73', '#FFFFFF', '#009EE3']
+    });
+  }
+
+  Storage.setCart([]);
+  activeCoupon = null;
+  updateCartBadge();
+  renderCart();
+}
+
+// ================= 10. INTEGRAÇÃO MERCADO PAGO OFICIAL & CHECKOUT COMPLETO =================
+let trackingPollingInterval = null;
+let currentTrackingOrderId = null;
+
 async function initPublicPaymentConfig() {
   try {
     const res = await fetch('/api/config/public');
@@ -745,12 +1623,11 @@ async function initPublicPaymentConfig() {
       }
     }
   } catch (err) {
-    console.warn('[MercadoPago] API offline ou executando em modo estático:', err.message);
+    console.warn('[MercadoPago] Configuração pública local:', err.message);
   }
 }
 
-// ================= ROTEAMENTO CLIENT-SIDE (SPA ROUTER) =================
-let currentRoute = 'home'; // 'home', 'checkout', 'tracking', 'order-detail'
+let currentRoute = 'home';
 
 function navigateToHome(e) {
   if (e && e.preventDefault) e.preventDefault();
@@ -797,8 +1674,6 @@ function navigateToCheckout(e) {
   document.getElementById('checkoutView')?.classList.remove('hidden');
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // Preenche dados salvos do cliente se houver
   loadSavedCustomerData();
   renderCheckoutSummary();
 }
@@ -826,7 +1701,6 @@ function navigateToTracking(e, orderId = null, preloadedOrder = null, pixDetails
     if (queryInput) queryInput.value = orderId;
     fetchAndDisplayOrder(orderId);
   } else {
-    // Se já havia buscado ou tem pedido recente no storage, sugere
     const lastOrderId = localStorage.getItem('BV_LAST_ORDER_ID');
     if (lastOrderId) {
       const queryInput = document.getElementById('trackingQueryInput');
@@ -842,13 +1716,8 @@ function toggleMobileMenu() {
   if (menu) menu.classList.toggle('hidden');
 }
 
-function closeMobileMenu() {
-  const menu = document.getElementById('mobileMenu');
-  if (menu) menu.classList.add('hidden');
-}
-
 function initRouter() {
-  window.addEventListener('popstate', (e) => {
+  window.addEventListener('popstate', () => {
     handleRouteLocation();
   });
   handleRouteLocation();
@@ -879,21 +1748,18 @@ function handleRouteLocation() {
     return;
   }
 
-  // Se retornou do Mercado Pago com aprovação:
   if (status === 'approved' && externalRef) {
     navigateToTracking(null, externalRef);
     return;
   }
 
-  // Padrão: Home
   document.getElementById('mainStoreContent')?.classList.remove('hidden');
   document.getElementById('checkoutView')?.classList.add('hidden');
   document.getElementById('orderTrackingView')?.classList.add('hidden');
 }
 
-// ================= CHECKOUT SEGURO (MODELO JVMODAS) =================
-let selectedShippingMethod = 'PAC'; // 'PAC', 'SEDEX', 'RETIRADA'
-let selectedPaymentMethod = 'checkout_pro'; // 'checkout_pro', 'pix'
+let selectedShippingMethod = 'PAC';
+let selectedPaymentMethod = 'checkout_pro';
 let checkoutCoupon = null;
 
 function loadSavedCustomerData() {
@@ -917,9 +1783,8 @@ function loadSavedCustomerData() {
 
 function selectShippingMethod(method) {
   selectedShippingMethod = method;
-  
-  const options = ['PAC', 'SEDEX', 'RETIRADA'];
-  options.forEach(opt => {
+
+  ['PAC', 'SEDEX', 'RETIRADA'].forEach(opt => {
     const card = document.getElementById(`shippingCard${opt}`);
     const radio = document.getElementById(`shippingRadio${opt}`);
     if (opt === method) {
@@ -976,7 +1841,6 @@ function selectPaymentMethod(method) {
   renderCheckoutSummary();
 }
 
-// Busca de CEP automática via API ViaCEP
 async function handleCepSearch() {
   const input = document.getElementById('checkoutCep');
   const feedback = document.getElementById('checkoutCepFeedback');
@@ -999,24 +1863,17 @@ async function handleCepSearch() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
   }
 
-  if (feedback) {
-    feedback.className = 'text-xs mt-1.5 font-medium text-stone-500 block';
-    feedback.innerText = 'Consultando endereço nos Correios...';
-  }
-
   try {
     const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
     const data = await res.json();
-
     if (data.erro) {
       if (feedback) {
         feedback.className = 'text-xs mt-1.5 font-medium text-rose-600 block';
-        feedback.innerText = 'CEP não encontrado. Por favor, preencha o endereço manualmente.';
+        feedback.innerText = 'CEP não encontrado. Preencha manualmente.';
       }
       return;
     }
 
-    // Auto-preenchimento
     if (data.logradouro) document.getElementById('checkoutStreet').value = data.logradouro;
     if (data.bairro) document.getElementById('checkoutNeighborhood').value = data.bairro;
     if (data.localidade) document.getElementById('checkoutCity').value = data.localidade;
@@ -1024,14 +1881,13 @@ async function handleCepSearch() {
 
     if (feedback) {
       feedback.className = 'text-xs mt-1.5 font-medium text-emerald-600 block';
-      feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${data.localidade} - ${data.uf} localizada com sucesso!`;
+      feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${data.localidade} - ${data.uf} localizada!`;
     }
-
     document.getElementById('checkoutNumber')?.focus();
-  } catch (err) {
+  } catch {
     if (feedback) {
       feedback.className = 'text-xs mt-1.5 font-medium text-amber-600 block';
-      feedback.innerText = 'Não foi possível consultar o CEP automaticamente. Preencha os campos abaixo.';
+      feedback.innerText = 'Não foi possível consultar o CEP automaticamente.';
     }
   } finally {
     if (btn) {
@@ -1041,7 +1897,6 @@ async function handleCepSearch() {
   }
 }
 
-// Cupom no Checkout
 function handleCheckoutApplyCoupon() {
   const input = document.getElementById('checkoutCouponInput');
   const feedback = document.getElementById('checkoutCouponFeedback');
@@ -1066,7 +1921,6 @@ function handleCheckoutApplyCoupon() {
   }
 }
 
-// Renderização dos totais e itens do resumo do checkout
 function renderCheckoutSummary() {
   const cart = Storage.getCart();
   const itemsContainer = document.getElementById('checkoutSummaryItemsList');
@@ -1085,25 +1939,24 @@ function renderCheckoutSummary() {
 
   let subtotal = 0;
   itemsContainer.innerHTML = cart.map(item => {
-    const itemTotal = item.price * item.quantity;
+    const itemTotal = Number(item.price) * Number(item.quantity);
     subtotal += itemTotal;
     return `
       <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-stone-50 border border-stone-200/80">
         <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-xl object-cover border border-stone-200">
         <div class="flex-1 min-w-0">
           <h4 class="text-xs font-heading font-bold text-stone-900 truncate">${item.name}</h4>
-          <span class="text-[10px] text-stone-500">${item.quantity}x ${item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+          <span class="text-[10px] text-stone-500">${item.quantity}x ${Number(item.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
         </div>
         <span class="text-xs font-bold text-stone-900 font-heading">${itemTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
       </div>
     `;
   }).join('');
 
-  // Frete
   let shippingPrice = 0;
   const pacPriceEl = document.getElementById('checkoutPacPrice');
   const pacBadgeEl = document.getElementById('checkoutPacBadge');
-  
+
   if (subtotal >= FREE_SHIPPING_THRESHOLD) {
     if (pacPriceEl) pacPriceEl.innerText = 'Grátis';
     if (pacBadgeEl) pacBadgeEl.innerText = 'Grátis';
@@ -1120,7 +1973,6 @@ function renderCheckoutSummary() {
     shippingPrice = 0;
   }
 
-  // Desconto de cupom
   const couponObj = checkoutCoupon || activeCoupon;
   let couponDiscount = 0;
   const couponRow = document.getElementById('checkoutCouponRow');
@@ -1134,7 +1986,6 @@ function renderCheckoutSummary() {
     if (couponRow) couponRow.classList.add('hidden');
   }
 
-  // Desconto Pix (5% extra sobre o subtotal)
   let pixDiscount = 0;
   const pixRow = document.getElementById('checkoutPixDiscountRow');
   const pixText = document.getElementById('checkoutPixDiscount');
@@ -1157,7 +2008,6 @@ function renderCheckoutSummary() {
   document.getElementById('checkoutInstallmentsInfo').innerText = `ou em até ${maxInst}x de R$ ${instVal} sem juros no Mercado Pago`;
 }
 
-// Submissão do Checkout Unificado (Process Order)
 async function processOrderCheckout() {
   const cart = Storage.getCart();
   if (cart.length === 0) {
@@ -1165,7 +2015,6 @@ async function processOrderCheckout() {
     return;
   }
 
-  // Validação dos dados do comprador
   const name = document.getElementById('checkoutName').value.trim();
   const email = document.getElementById('checkoutEmail').value.trim();
   const cpf = document.getElementById('checkoutCpf').value.trim();
@@ -1177,7 +2026,6 @@ async function processOrderCheckout() {
     return;
   }
 
-  // Validação do endereço
   const isPickup = selectedShippingMethod === 'RETIRADA';
   let zip = document.getElementById('checkoutCep')?.value.trim() || '';
   let street = document.getElementById('checkoutStreet')?.value.trim() || '';
@@ -1202,7 +2050,6 @@ async function processOrderCheckout() {
     }
   }
 
-  // Salva no storage para conveniência
   try {
     localStorage.setItem('BV_CUSTOMER_DATA', JSON.stringify({
       name, email, cpf, phone, zip, street, number, complement, neighborhood, city, state
@@ -1222,18 +2069,14 @@ async function processOrderCheckout() {
       title: item.name,
       description: item.category || 'Alta Joalheria Bruna Valois',
       unit_price: Number(item.price),
+      price: Number(item.price),
       quantity: Number(item.quantity),
       image: item.image
     }));
 
     const payload = {
       items,
-      customer: {
-        name,
-        email,
-        cpf,
-        phone
-      },
+      customer: { name, email, cpf, phone },
       shipping: {
         method: selectedShippingMethod,
         zip,
@@ -1245,8 +2088,8 @@ async function processOrderCheckout() {
         city,
         state
       },
-      payment_method: selectedPaymentMethod,
-      coupon: (checkoutCoupon || activeCoupon)?.code || null
+      paymentMethod: selectedPaymentMethod,
+      couponCode: (checkoutCoupon || activeCoupon)?.code || null
     };
 
     const res = await fetch('/api/checkout/process-order', {
@@ -1260,10 +2103,7 @@ async function processOrderCheckout() {
       throw new Error(data.message || 'Falha ao processar o pedido.');
     }
 
-    // Salva último ID gerado
     localStorage.setItem('BV_LAST_ORDER_ID', data.orderId);
-
-    // Limpa a sacola
     Storage.setCart([]);
     updateCartBadge();
     renderCart();
@@ -1277,7 +2117,6 @@ async function processOrderCheckout() {
       }
     } else if (data.paymentMethod === 'pix') {
       showToast('Pedido registrado! Realize o pagamento Pix.');
-      // Navega diretamente para a tela de acompanhamento com o pedido
       navigateToTracking(null, data.orderId, data.order, data.pix);
     }
   } catch (err) {
@@ -1291,10 +2130,7 @@ async function processOrderCheckout() {
   }
 }
 
-// ================= ACOMPANHAMENTO DE PEDIDOS (MODELO JVMODAS) =================
-let trackingPollingInterval = null;
-let currentTrackingOrderId = null;
-
+// ================= 11. ACOMPANHAMENTO DE PEDIDOS =================
 async function handleTrackingSearch(e) {
   if (e && e.preventDefault) e.preventDefault();
   const input = document.getElementById('trackingQueryInput');
@@ -1324,7 +2160,7 @@ async function handleTrackingSearch(e) {
 
     if (!res.ok || !data.success || !data.orders || data.orders.length === 0) {
       const msgEl = document.getElementById('trackingNotFoundMsg');
-      if (msgEl) msgEl.innerText = data.message || `Nenhum pedido encontrado para "${query}". Verifique os dados e tente novamente.`;
+      if (msgEl) msgEl.innerText = data.message || `Nenhum pedido encontrado para "${query}".`;
       notFound?.classList.remove('hidden');
       return;
     }
@@ -1362,7 +2198,7 @@ async function fetchAndDisplayOrder(orderId) {
     }
 
     renderOrderDetail(json.data);
-  } catch (err) {
+  } catch {
     loading?.classList.add('hidden');
     notFound?.classList.remove('hidden');
   }
@@ -1409,7 +2245,6 @@ function getStatusDisplayInfo(status, shippingStatus) {
   if (status === 'pending' || status === 'in_process') {
     return { label: 'Aguardando Pagamento', badgeClass: 'bg-amber-100 text-amber-800' };
   }
-  // Se aprovado:
   if (shippingStatus === 'DELIVERED') {
     return { label: 'Entregue com Sucesso', badgeClass: 'bg-emerald-100 text-emerald-800' };
   }
@@ -1428,12 +2263,10 @@ function renderOrderDetail(order, pixDetails = null) {
   if (multiView) multiView.classList.add('hidden');
   if (detailView) detailView.classList.remove('hidden');
 
-  // Header
   document.getElementById('detailOrderId').innerText = `#${order.id}`;
   const dateFormatted = new Date(order.created_at).toLocaleString('pt-BR');
   document.getElementById('detailOrderDate').innerText = `• ${dateFormatted}`;
 
-  // Badge Status
   const statusInfo = getStatusDisplayInfo(order.status, order.shipping_status);
   const badgeContainer = document.getElementById('detailStatusBadgeContainer');
   if (badgeContainer) {
@@ -1445,10 +2278,8 @@ function renderOrderDetail(order, pixDetails = null) {
     `;
   }
 
-  // Atualização da Esteira de 5 Passos
   updateOrderTimeline(order);
 
-  // Bloco Pix Pendente
   const pendingPixBlock = document.getElementById('detailPendingPixBlock');
   const pixData = pixDetails || order.pix;
 
@@ -1466,7 +2297,6 @@ function renderOrderDetail(order, pixDetails = null) {
         }
       }
 
-      // Mostra simulação de sandbox se ambiente de teste
       const simBox = document.getElementById('detailSandboxSimulateBox');
       if (simBox) {
         if (window.MP_CONFIG?.isSandbox || order.metadata?.is_sandbox) {
@@ -1476,14 +2306,11 @@ function renderOrderDetail(order, pixDetails = null) {
         }
       }
     }
-
-    // Inicia Polling em tempo real a cada 3 segundos
     startOrderLivePolling(order.id);
   } else {
     if (pendingPixBlock) pendingPixBlock.classList.add('hidden');
   }
 
-  // Bloco Rastreamento Correios
   const trackingBlock = document.getElementById('detailTrackingCodeBlock');
   if (order.tracking_code) {
     if (trackingBlock) trackingBlock.classList.remove('hidden');
@@ -1497,7 +2324,6 @@ function renderOrderDetail(order, pixDetails = null) {
     if (trackingBlock) trackingBlock.classList.add('hidden');
   }
 
-  // Produtos
   const itemsList = document.getElementById('detailItemsList');
   const itemsCount = document.getElementById('detailItemsCount');
   const items = order.items || [];
@@ -1516,16 +2342,14 @@ function renderOrderDetail(order, pixDetails = null) {
     `).join('');
   }
 
-  // Destinatário e Endereço
   const customer = order.customer || order.payer || {};
   const shipping = order.shipping || {};
   document.getElementById('detailCustomerName').innerText = customer.name || 'Cliente Bruna Valois';
   document.getElementById('detailAddressStreet').innerText = `${shipping.street || ''}, ${shipping.number || ''} ${shipping.complement ? '- ' + shipping.complement : ''}`;
   document.getElementById('detailAddressCity').innerText = `${shipping.neighborhood || ''} - ${shipping.city || ''}/${shipping.state || ''}`;
-  document.getElementById('detailAddressCep').innerText = shipping.zip ? `CEP: ${shipping.zip}` : '';
+  document.getElementById('detailAddressCep').innerText = (shipping.zip || shipping.cep) ? `CEP: ${shipping.zip || shipping.cep}` : '';
   document.getElementById('detailShippingMethod').innerText = `${shipping.method || 'PAC'} • Seguro Total Incluso`;
 
-  // Resumo Financeiro
   const subtotal = order.subtotal || order.total || 0;
   const shippingPrice = order.shipping_price || 0;
   const discount = order.discount || 0;
@@ -1533,7 +2357,7 @@ function renderOrderDetail(order, pixDetails = null) {
 
   document.getElementById('detailSubtotal').innerText = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   document.getElementById('detailShippingPrice').innerText = shippingPrice === 0 ? 'Grátis' : shippingPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  
+
   const discountRow = document.getElementById('detailDiscountRow');
   const discountEl = document.getElementById('detailDiscount');
   if (discount > 0) {
@@ -1545,9 +2369,8 @@ function renderOrderDetail(order, pixDetails = null) {
 
   document.getElementById('detailTotal').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  // Botão WhatsApp Suporte VIP
   const content = Storage.getContent();
-  const atelierPhone = content.whatsappNumber.replace(/\D/g, '') || '5511999999999';
+  const atelierPhone = String(content.whatsappNumber || '5511999999999').replace(/\D/g, '');
   const whatsappMsg = encodeURIComponent(`Olá Bruna Valois Ateliê! ✨ Gostaria de informações sobre o meu pedido #${order.id} (Nome: ${customer.name || 'Cliente'}, Status: ${statusInfo.label}).`);
   const whatsappBtn = document.getElementById('detailWhatsappSupportBtn');
   if (whatsappBtn) {
@@ -1555,7 +2378,6 @@ function renderOrderDetail(order, pixDetails = null) {
   }
 }
 
-// Atualização Visual dos 5 Passos da Esteira
 function updateOrderTimeline(order) {
   let step = 1;
   const status = order.status;
@@ -1581,25 +2403,22 @@ function updateOrderTimeline(order) {
   for (let i = 1; i <= 5; i++) {
     const circle = document.getElementById(`stepCircle${i}`);
     const timeEl = document.getElementById(`stepTime${i}`);
+    if (!circle) continue;
 
     if (i < step) {
-      // Concluído
       circle.className = 'w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0';
       circle.innerHTML = '<i class="fas fa-check"></i>';
       if (timeEl) timeEl.innerText = 'Concluído';
     } else if (i === step) {
-      // Passo Atual Ativo
       circle.className = 'w-10 h-10 rounded-full bg-[#C5A059] text-stone-950 flex items-center justify-center font-bold text-sm shadow-lg flex-shrink-0 ring-4 ring-[#C5A059]/30 animate-pulse';
       if (timeEl) timeEl.innerText = 'Em Andamento';
     } else {
-      // Futuro
       circle.className = 'w-10 h-10 rounded-full bg-stone-100 text-stone-400 border border-stone-200 flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0';
       if (timeEl) timeEl.innerText = 'Aguardando';
     }
   }
 }
 
-// Live Polling do Pedido (quando pendente)
 function startOrderLivePolling(orderId) {
   stopOrderLivePolling();
   trackingPollingInterval = setInterval(async () => {
@@ -1657,7 +2476,6 @@ async function simulateDetailPixApproval() {
   }
 }
 
-// Máscaras de Input (Puro JS)
 function initCheckoutMasks() {
   const cpf = document.getElementById('checkoutCpf');
   const phone = document.getElementById('checkoutPhone');
@@ -1695,7 +2513,6 @@ function initCheckoutMasks() {
       }
       e.target.value = v;
 
-      // Auto busca ao atingir 8 dígitos
       if (v.replace(/\D/g, '').length === 8) {
         handleCepSearch();
       }
@@ -1703,10 +2520,8 @@ function initCheckoutMasks() {
   }
 }
 
-// Alias para compatibilidade
 const renderCartItems = renderCart;
 
-// 3. Verificação de Retorno de Checkout (/checkout/success ou query status=approved)
 async function checkReturnUrlParams() {
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get('status') || urlParams.get('collection_status');
@@ -1739,7 +2554,6 @@ async function checkReturnUrlParams() {
   }
 }
 
-
 function openReceiptModal(order) {
   const modal = document.getElementById('receiptModal');
   if (!modal) return;
@@ -1754,7 +2568,7 @@ function openReceiptModal(order) {
     list.innerHTML = order.items.map(i => `
       <li class="flex justify-between text-xs">
         <span>${i.quantity}x ${i.name}</span>
-        <span class="font-bold">${(i.price * i.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+        <span class="font-bold">${(Number(i.price) * Number(i.quantity)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
       </li>
     `).join('');
   }
@@ -1762,7 +2576,7 @@ function openReceiptModal(order) {
   modal.classList.remove('hidden');
   setTimeout(() => {
     modal.classList.remove('opacity-0');
-    modal.firstElementChild.classList.remove('scale-95');
+    modal.firstElementChild?.classList.remove('scale-95');
   }, 10);
 }
 
@@ -1770,7 +2584,7 @@ function closeReceiptModal() {
   const modal = document.getElementById('receiptModal');
   if (modal) {
     modal.classList.add('opacity-0');
-    modal.firstElementChild.classList.add('scale-95');
+    modal.firstElementChild?.classList.add('scale-95');
     setTimeout(() => modal.classList.add('hidden'), 300);
   }
 }
@@ -1779,18 +2593,23 @@ function sendOrderToWhatsApp() {
   if (!lastOrderData) return;
 
   const content = Storage.getContent();
-  const phone = content.whatsappNumber.replace(/\D/g, '') || '5511999999999';
+  const phone = String(content.whatsappNumber || '5511999999999').replace(/\D/g, '');
+  const itemsSummary = lastOrderData.items.map(i => `• ${i.quantity}x ${i.name}`).join('%0A');
 
-  let itemsSummary = lastOrderData.items.map(i => `• ${i.quantity}x ${i.name}`).join('%0A');
-  
   const msg = `Olá *Bruna Valois Joias e Semijoias*! ✨%0A%0AAcabei de finalizar o pedido com pagamento aprovado no *Mercado Pago*:%0A%0A*Código:* ${lastOrderData.transactionId}%0A*Data:* ${lastOrderData.dateStr}%0A*Método:* ${lastOrderData.method}%0A*Valor Total:* ${lastOrderData.formattedTotal}%0A%0A*Itens Adquiridos:*%0A${itemsSummary}%0A%0APoderiam por gentileza confirmar o recebimento e me enviar o código de rastreamento com seguro total?%0A%0AMuito obrigado(a)!`;
 
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
 
-// ================= ATELIÊ SOB MEDIDA: ENCOMENDE SUA JOIA =================
-function handleAtelieSubmit(e) {
-  e.preventDefault();
+// ================= 12. OPERAÇÕES DE CRUD EM NUVEM COM PROMISES E AWAIT OBRIGATÓRIOS =================
+
+/**
+ * 12.1. Briefings de Encomendas Sob Medida (handleCustomOrderSubmit)
+ * Salva novo registro diretamente na coleção global custom_orders com await setDoc(orderDocRef, orderData)
+ * Sem mutação manual em memória.
+ */
+async function handleCustomOrderSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
 
   const nome = document.getElementById('atelieNome').value.trim();
   const whatsapp = document.getElementById('atelieWhatsapp').value.trim();
@@ -1806,7 +2625,7 @@ function handleAtelieSubmit(e) {
   const now = new Date();
   const protocol = `AT-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const newOrder = {
+  const orderData = {
     id: protocol,
     nome,
     whatsapp,
@@ -1819,29 +2638,55 @@ function handleAtelieSubmit(e) {
     descricao,
     link,
     status: 'Em Análise',
-    data: now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    data: now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    createdAt: now.toISOString()
   };
 
-  const orders = Storage.getAtelieOrders();
-  orders.unshift(newOrder);
-  Storage.setAtelieOrders(orders);
+  try {
+    ensureCloudAuthenticated();
+    const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_orders', protocol);
+    await setDoc(orderDocRef, orderData);
 
-  // Efeito de sucesso e limpeza
-  e.target.reset();
-  showToast(`Briefing ${protocol} enviado com sucesso para os nossos ourives!`);
+    if (e && e.target && typeof e.target.reset === 'function') {
+      e.target.reset();
+    }
+    showToast(`Briefing ${protocol} sincronizado na nuvem e enviado aos nossos ourives!`);
 
-  // Envio imediato para WhatsApp opcional
-  const content = Storage.getContent();
-  const phone = content.whatsappNumber.replace(/\D/g, '') || '5511999999999';
+    const content = Storage.getContent();
+    const phone = String(content.whatsappNumber || '5511999999999').replace(/\D/g, '');
 
-  const confirmDispatch = confirm(`Briefing ${protocol} registrado com sucesso no Ateliê Bruna Valois!\n\nDeseja abrir o WhatsApp agora para conversar diretamente com nossa curadora de joias?`);
-  if (confirmDispatch) {
-    const msg = `Olá *Ateliê Bruna Valois*! ✨%0A%0AAcabei de cadastrar o briefing de joia sob medida no site:%0A%0A*Protocolo:* ${protocol}%0A*Cliente:* ${nome}%0A*Tipo de Joia:* ${tipo}%0A*Metal:* ${metal}%0A*Gema:* ${gema}%0A*Aro/Medida:* ${newOrder.aro}%0A*Orçamento Estimado:* ${orcamento}%0A*Descrição:* ${descricao}%0A%0AAguardo o contato para a modelagem 3D e proposta!`;
-    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    const confirmDispatch = confirm(`Briefing ${protocol} registrado na nuvem do Ateliê Bruna Valois!\n\nDeseja abrir o WhatsApp agora para conversar diretamente com nossa curadora de joias?`);
+    if (confirmDispatch) {
+      const msg = `Olá *Ateliê Bruna Valois*! ✨%0A%0AAcabei de cadastrar o briefing de joia sob medida no site:%0A%0A*Protocolo:* ${protocol}%0A*Cliente:* ${nome}%0A*Tipo de Joia:* ${tipo}%0A*Metal:* ${metal}%0A*Gema:* ${gema}%0A*Aro/Medida:* ${orderData.aro}%0A*Orçamento Estimado:* ${orcamento}%0A*Descrição:* ${descricao}%0A%0AAguardo o contato para a modelagem 3D e proposta!`;
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
+  } catch (error) {
+    showCloudPermissionError('Envio de Briefing Sob Medida', error);
   }
 }
 
-// ================= SEGURANÇA E ACESSO AO PAINEL CMS =================
+// Alias de compatibilidade
+const handleAtelieSubmit = handleCustomOrderSubmit;
+
+/**
+ * 12.2. Atualização de Status de Encomenda (updateAtelieOrderStatus)
+ * Executa await updateDoc(orderDocRef, { status: newStatus })
+ */
+async function updateAtelieOrderStatus(orderId, newStatus) {
+  try {
+    ensureCloudAuthenticated();
+    const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'custom_orders', orderId);
+    await updateDoc(orderDocRef, {
+      status: newStatus,
+      updatedAt: new Date().toISOString()
+    });
+    showToast(`Status da encomenda ${orderId} atualizado na nuvem para "${newStatus}".`);
+  } catch (error) {
+    showCloudPermissionError(`Atualizar Status da Encomenda ${orderId}`, error);
+  }
+}
+
+// ================= 13. SEGURANÇA E ACESSO AO PAINEL CMS =================
 const CMS_PASSWORD = 'oprincipeencantado';
 
 function requestCmsAccess() {
@@ -1921,7 +2766,7 @@ function logoutCms() {
   showToast('Sessão administrativa bloqueada com sucesso.');
 }
 
-// ================= PAINEL CMS ADMINISTRATIVO =================
+// ================= 14. PAINEL CMS ADMINISTRATIVO & OPERAÇÕES EM NUVEM =================
 function openCmsModal() {
   const modal = document.getElementById('cmsModal');
   if (modal) {
@@ -1932,10 +2777,10 @@ function openCmsModal() {
     }, 10);
   }
 
-  // Preencher formulários com estado ativo
-  applyTheme(Storage.getTheme(), false);
-  applyContent(Storage.getContent(), false);
-  applyPaymentConfig(Storage.getPayment(), false);
+  // Preenche formulários com o estado hidratado da nuvem
+  applyThemeToDOM(Storage.getTheme());
+  applyContentToDOM(Storage.getContent());
+  applyPaymentConfigToDOM(Storage.getPayment());
   renderCmsProductsTable();
   renderCmsAtelieOrders();
   switchCmsTab('cmsTabTheme');
@@ -1988,7 +2833,6 @@ function setupCmsNavigation() {
     });
   });
 
-  // Color Pickers interativos
   ['Primary', 'Accent', 'Bg', 'CardBg', 'Text'].forEach(key => {
     const input = document.getElementById(`cmsColor${key}`);
     const hexSpan = document.getElementById(`cmsHex${key}`);
@@ -2000,8 +2844,15 @@ function setupCmsNavigation() {
   });
 }
 
-function saveCmsChanges() {
-  // Salvar Temas
+/**
+ * 14.1. Publicação do CMS na Nuvem (saveCmsSettings)
+ * Salva com await setDoc(configDocRef, updatedSettings, { merge: true }).
+ * Notifica: "Alterações publicadas globalmente para todos os visitantes".
+ */
+async function saveCmsSettings() {
+  const saveBtn = document.getElementById('cmsSaveSettingsBtn');
+  const originalText = saveBtn ? saveBtn.innerHTML : '';
+
   const updatedTheme = {
     preset: 'custom',
     colorPrimary: document.getElementById('cmsColorPrimary').value,
@@ -2011,9 +2862,7 @@ function saveCmsChanges() {
     colorText: document.getElementById('cmsColorText').value,
     fontFamily: document.getElementById('cmsFontSelect').value
   };
-  applyTheme(updatedTheme, true);
 
-  // Salvar Conteúdos
   const updatedContent = {
     topAnnouncement: document.getElementById('cmsInputAnnouncement').value,
     heroTitle: document.getElementById('cmsInputHeroTitle').value,
@@ -2022,47 +2871,84 @@ function saveCmsChanges() {
     aboutBrand: document.getElementById('cmsInputAboutBrand').value,
     whatsappNumber: document.getElementById('cmsInputWhatsapp').value
   };
-  applyContent(updatedContent, true);
 
-  // Salvar Pagamentos
   const updatedPayment = {
     checkoutUrl: document.getElementById('cmsMpCheckoutUrl') ? document.getElementById('cmsMpCheckoutUrl').value.trim() : '',
     publicKey: document.getElementById('cmsMpPublicKey').value.trim(),
     accessToken: document.getElementById('cmsMpAccessToken').value.trim(),
     environment: document.getElementById('cmsMpEnvironment').value,
-    maxInstallmentsWithoutInterest: parseInt(document.getElementById('cmsMpInstallments').value, 10),
+    maxInstallmentsWithoutInterest: parseInt(document.getElementById('cmsMpInstallments').value, 10) || 10,
     pixKey: document.getElementById('cmsPixKey').value.trim()
   };
-  applyPaymentConfig(updatedPayment, true);
 
-  renderVitrine();
-  showToast('Todas as alterações foram salvas e sincronizadas em tempo real!');
-  closeCmsModal();
-}
+  const updatedSettings = {
+    theme: updatedTheme,
+    content: updatedContent,
+    payment: updatedPayment,
+    updatedAt: new Date().toISOString()
+  };
 
-function restoreDefaultSettings() {
-  if (confirm('Deseja restaurar as configurações originais de fábrica de cores, vitrine e textos?')) {
-    localStorage.removeItem('BV_THEME_CONFIG');
-    localStorage.removeItem('BV_CONTENT_CONFIG');
-    localStorage.removeItem('BV_PAYMENT_CONFIG');
-    localStorage.removeItem('BV_PRODUCTS');
-    localStorage.removeItem('BV_ATELIE_ORDERS');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Publicando na Nuvem...';
+  }
 
-    applyTheme(DEFAULT_THEME_CONFIG, true);
-    applyContent(DEFAULT_CONTENT_CONFIG, true);
-    applyPaymentConfig(DEFAULT_PAYMENT_CONFIG, true);
-    Storage.setProducts(INITIAL_PRODUCTS);
-    Storage.setAtelieOrders(INITIAL_ATELIE_ORDERS);
+  try {
+    ensureCloudAuthenticated();
+    const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+    await setDoc(configDocRef, updatedSettings, { merge: true });
 
-    renderVitrine();
-    renderCmsProductsTable();
-    renderCmsAtelieOrders();
-
-    showToast('Configurações originais de alta joalheria restauradas com sucesso!');
+    showToast('Alterações publicadas globalmente para todos os visitantes');
+    closeCmsModal();
+  } catch (error) {
+    showCloudPermissionError('Publicação de Configurações CMS', error);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
+    }
   }
 }
 
-// CRUD de Produtos
+// Alias de compatibilidade
+const saveCmsChanges = saveCmsSettings;
+
+async function restoreDefaultSettings() {
+  if (!confirm('Deseja restaurar na nuvem as configurações originais de fábrica de cores, vitrine e textos para todos os dispositivos?')) {
+    return;
+  }
+
+  try {
+    ensureCloudAuthenticated();
+    if (!firebaseNativeSdk) {
+      const res = await fetch('/api/cloud/reset', {
+        method: 'POST',
+        headers: getCloudAuthHeaders(),
+        body: JSON.stringify({ appId })
+      });
+      if (!res.ok) throw new Error('Falha ao restaurar padrões na nuvem.');
+    } else {
+      const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+      await setDoc(configDocRef, {
+        theme: DEFAULT_THEME_CONFIG,
+        content: DEFAULT_CONTENT_CONFIG,
+        payment: DEFAULT_PAYMENT_CONFIG,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      for (const prod of INITIAL_PRODUCTS) {
+        const prodDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', prod.id);
+        await setDoc(prodDocRef, prod, { merge: true });
+      }
+    }
+
+    showToast('Alterações publicadas globalmente para todos os visitantes');
+  } catch (error) {
+    showCloudPermissionError('Restaurar Padrões de Fábrica', error);
+  }
+}
+
+// ================= 15. CRUD DE PRODUTOS EM NUVEM (ZERO MUTAÇÃO LOCAL) =================
 function renderCmsProductsTable() {
   const tbody = document.getElementById('cmsProductsTableBody');
   if (!tbody) return;
@@ -2070,7 +2956,7 @@ function renderCmsProductsTable() {
   const products = Storage.getProducts();
 
   tbody.innerHTML = products.map(item => `
-    <tr class="hover:bg-stone-50 transition">
+    <tr class="hover:bg-stone-50 transition" data-product-row="${item.id}">
       <td class="p-3">
         <div class="flex items-center gap-3">
           <img src="${item.image}" alt="${item.name}" class="w-10 h-10 rounded-lg object-cover border border-stone-200">
@@ -2081,7 +2967,7 @@ function renderCmsProductsTable() {
         </div>
       </td>
       <td class="p-3 font-medium text-stone-700">${item.category}</td>
-      <td class="p-3 font-bold text-stone-900">${item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+      <td class="p-3 font-bold text-stone-900">${(Number(item.price) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
       <td class="p-3 text-stone-600 truncate max-w-xs">${item.material}</td>
       <td class="p-3 text-right space-x-2">
         <button onclick="editProduct('${item.id}')" class="text-stone-600 hover:text-[#C5A059] p-1.5" title="Editar Joia">
@@ -2101,7 +2987,7 @@ function openProductFormModal(isEdit = false) {
     modal.classList.remove('hidden');
     setTimeout(() => {
       modal.classList.remove('opacity-0');
-      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild?.classList.remove('scale-95');
     }, 10);
   }
   if (!isEdit) {
@@ -2115,7 +3001,7 @@ function closeProductFormModal() {
   const modal = document.getElementById('productFormModal');
   if (modal) {
     modal.classList.add('opacity-0');
-    modal.firstElementChild.classList.add('scale-95');
+    modal.firstElementChild?.classList.add('scale-95');
     setTimeout(() => modal.classList.add('hidden'), 300);
   }
 }
@@ -2138,21 +3024,18 @@ function editProduct(productId) {
   openProductFormModal(true);
 }
 
-function deleteProduct(productId) {
-  if (confirm('Tem certeza de que deseja remover esta joia do catálogo?')) {
-    let products = Storage.getProducts();
-    products = products.filter(p => p.id !== productId);
-    Storage.setProducts(products);
-    renderVitrine();
-    renderCmsProductsTable();
-    showToast('Joia removida do catálogo.');
-  }
-}
+/**
+ * 15.1. Adicionar / Atualizar Produto (handleProductFormSubmit)
+ * - Gera ID determinístico ou chave única (bv-prod-${Date.now()}).
+ * - Executa escrita com await setDoc(docRef, payload, { merge: true }).
+ * - Fecha o modal e exibe toast de sucesso somente após o retorno bem-sucedido da nuvem.
+ * - Proibida qualquer mutação local em arrays ou localStorage em caso de erro.
+ */
+async function handleProductFormSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
 
-function handleProductCrudSubmit(e) {
-  e.preventDefault();
-
-  const id = document.getElementById('crudProductId').value || `bv-${Date.now()}`;
+  const existingId = document.getElementById('crudProductId').value.trim();
+  const id = existingId || `bv-prod-${Date.now()}`;
   const name = document.getElementById('crudProductName').value.trim();
   const category = document.getElementById('crudProductCategory').value;
   const price = parseFloat(document.getElementById('crudProductPrice').value) || 0;
@@ -2161,26 +3044,63 @@ function handleProductCrudSubmit(e) {
   const material = document.getElementById('crudProductMaterial').value.trim();
   const description = document.getElementById('crudProductDescription').value.trim();
 
-  const newProduct = { id, name, category, price, image, tag, material, description };
+  const payload = {
+    id,
+    name,
+    category,
+    price,
+    image,
+    tag,
+    material,
+    description,
+    updatedAt: new Date().toISOString()
+  };
 
-  let products = Storage.getProducts();
-  const existingIndex = products.findIndex(p => p.id === id);
-
-  if (existingIndex >= 0) {
-    products[existingIndex] = newProduct;
-    showToast(`Joia "${name}" atualizada com sucesso!`);
-  } else {
-    products.unshift(newProduct);
-    showToast(`Joia "${name}" adicionada ao catálogo!`);
+  if (!existingId) {
+    payload.createdAt = new Date().toISOString();
   }
 
-  Storage.setProducts(products);
-  renderVitrine();
-  renderCmsProductsTable();
-  closeProductFormModal();
+  try {
+    ensureCloudAuthenticated();
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', id);
+    await setDoc(docRef, payload, { merge: true });
+
+    closeProductFormModal();
+    showToast(
+      existingId
+        ? `Joia "${name}" atualizada globalmente na nuvem!`
+        : `Joia "${name}" adicionada globalmente ao catálogo em nuvem!`
+    );
+  } catch (error) {
+    showCloudPermissionError('Salvar Joia no Catálogo', error);
+  }
 }
 
-// Gestão de Encomendas do Ateliê
+// Alias de compatibilidade
+const handleProductCrudSubmit = handleProductFormSubmit;
+
+/**
+ * 15.2. Excluir Produto (deleteProduct)
+ * - Executa await deleteDoc(docRef).
+ * - A remoção da linha da tabela do CMS e do card da vitrine ocorre exclusivamente
+ *   através do evento disparado pelo listener em tempo real (onSnapshot), sem remoção manual imperativa prévia.
+ */
+async function deleteProduct(productId) {
+  if (!confirm('Tem certeza de que deseja remover esta joia do catálogo global em nuvem?')) {
+    return;
+  }
+
+  try {
+    ensureCloudAuthenticated();
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', productId);
+    await deleteDoc(docRef);
+    showToast('Joia excluída globalmente do banco em nuvem.');
+  } catch (error) {
+    showCloudPermissionError('Excluir Joia do Catálogo', error);
+  }
+}
+
+// ================= 16. RENDERIZAÇÃO DE ENCOMENDAS DO ATELIÊ NO PAINEL CMS =================
 function renderCmsAtelieOrders() {
   const container = document.getElementById('cmsAtelieOrdersContainer');
   if (!container) return;
@@ -2201,7 +3121,7 @@ function renderCmsAtelieOrders() {
     if (order.status === 'Em Produção') statusClass = 'bg-purple-100 text-purple-800 border-purple-200';
     if (order.status === 'Entregue') statusClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
-    const cleanWhatsapp = order.whatsapp.replace(/\D/g, '');
+    const cleanWhatsapp = String(order.whatsapp || '').replace(/\D/g, '');
     const atelierGreeting = encodeURIComponent(`Olá ${order.nome}, aqui é da Bruna Valois Joias e Ateliê! Recebemos seu briefing para um(a) ${order.tipo} em ${order.metal} com ${order.gema}. Vamos conversar sobre o seu projeto exclusivo?`);
 
     return `
@@ -2209,7 +3129,7 @@ function renderCmsAtelieOrders() {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-stone-100">
           <div>
             <span class="text-xs font-mono font-bold text-stone-900">${order.id}</span>
-            <span class="text-xs text-stone-500 ml-2">• ${order.data}</span>
+            <span class="text-xs text-stone-500 ml-2">• ${order.data || ''}</span>
           </div>
           <div class="flex items-center gap-2">
             <label class="text-[10px] text-stone-400 uppercase font-semibold">Status:</label>
@@ -2261,17 +3181,7 @@ function renderCmsAtelieOrders() {
   }).join('');
 }
 
-function updateAtelieOrderStatus(orderId, newStatus) {
-  const orders = Storage.getAtelieOrders();
-  const order = orders.find(o => o.id === orderId);
-  if (order) {
-    order.status = newStatus;
-    Storage.setAtelieOrders(orders);
-    showToast(`Status da encomenda ${orderId} alterado para "${newStatus}".`);
-  }
-}
-
-// ================= MODAL QUICK VIEW DETALHES DO PRODUTO =================
+// ================= 17. MODAL QUICK VIEW DETALHES DO PRODUTO =================
 function openProductDetail(productId) {
   const products = Storage.getProducts();
   const product = products.find(p => p.id === productId);
@@ -2279,13 +3189,14 @@ function openProductDetail(productId) {
 
   const paymentConfig = Storage.getPayment();
   const maxInst = paymentConfig.maxInstallmentsWithoutInterest || 10;
-  const instValue = (product.price / maxInst).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const priceNum = Number(product.price) || 0;
+  const instValue = (priceNum / maxInst).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   document.getElementById('detailProductImage').src = product.image;
   document.getElementById('detailProductName').innerText = product.name;
   document.getElementById('detailProductCategory').innerText = product.category;
   document.getElementById('detailProductTag').innerText = product.tag || 'ALTA JOALHERIA';
-  document.getElementById('detailProductPrice').innerText = product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  document.getElementById('detailProductPrice').innerText = priceNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   document.getElementById('detailProductInstallments').innerText = `em até ${maxInst}x de R$ ${instValue} sem juros no Mercado Pago`;
   document.getElementById('detailProductMaterial').innerText = product.material;
   document.getElementById('detailProductDescription').innerText = product.description;
@@ -2301,7 +3212,7 @@ function openProductDetail(productId) {
     modal.classList.remove('hidden');
     setTimeout(() => {
       modal.classList.remove('opacity-0');
-      modal.firstElementChild.classList.remove('scale-95');
+      modal.firstElementChild?.classList.remove('scale-95');
     }, 10);
   }
 }
@@ -2310,12 +3221,12 @@ function closeProductDetailModal() {
   const modal = document.getElementById('productDetailModal');
   if (modal) {
     modal.classList.add('opacity-0');
-    modal.firstElementChild.classList.add('scale-95');
+    modal.firstElementChild?.classList.add('scale-95');
     setTimeout(() => modal.classList.add('hidden'), 300);
   }
 }
 
-// ================= TOAST NOTIFICATION =================
+// ================= 18. TOAST NOTIFICATION =================
 let toastTimeout = null;
 function showToast(message, icon = 'fa-check-circle') {
   const toast = document.getElementById('toastNotification');
@@ -2334,26 +3245,28 @@ function showToast(message, icon = 'fa-check-circle') {
   toastTimeout = setTimeout(() => {
     toast.classList.add('translate-y-24', 'opacity-0');
     toast.classList.remove('translate-y-0', 'opacity-100');
-  }, 3500);
+  }, 3800);
 }
 
-// ================= INICIALIZAÇÃO E EVENT LISTENERS =================
+// ================= 19. INICIALIZAÇÃO E EVENT LISTENERS =================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Carregar configurações salvas
-  applyTheme(Storage.getTheme(), false);
-  applyContent(Storage.getContent(), false);
-  applyPaymentConfig(Storage.getPayment(), false);
-  
-  // 2. Renderizar componentes principais
-  renderVitrine();
+  // 1. Aplica estado base visual inicial enquanto aguarda o handshake de autenticação da nuvem
+  applyThemeToDOM(CloudState.theme);
+  applyContentToDOM(CloudState.content);
+  applyPaymentConfigToDOM(CloudState.payment);
+
+  // 2. Inicia o Ciclo de Autenticação Prévia Garantida, Seeding Determinístico e Listeners em Tempo Real
+  initCloudPersistenceEngine();
+
+  // 3. Atualiza sacola local e navegação do CMS
   updateCartBadge();
   setupCmsNavigation();
 
-  // 3. Atualizar ano no rodapé
+  // 4. Ano no rodapé
   const yearSpan = document.getElementById('yearSpan');
   if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
-  // 4. Listeners da Vitrine
+  // 5. Listeners da Vitrine (Busca, Ordenação e Categorias)
   const searchInput = document.getElementById('searchInput');
   const clearSearchBtn = document.getElementById('clearSearchBtn');
 
@@ -2397,28 +3310,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 5. Listeners da Sacola (Drawer)
+  // 6. Listeners da Sacola (Drawer)
   document.getElementById('cartOpenBtn')?.addEventListener('click', openCart);
   document.getElementById('cartCloseBtn')?.addEventListener('click', closeCart);
   document.getElementById('cartDrawerBackdrop')?.addEventListener('click', (e) => {
     if (e.target.id === 'cartDrawerBackdrop') closeCart();
   });
   document.getElementById('applyCouponBtn')?.addEventListener('click', applyCoupon);
-  
-  // 6. Listeners do Recibo Pós-Venda
+
+  // 7. Listeners do Modal Embutido Mercado Pago (Cartão Interativo)
+  const cardNum = document.getElementById('cardNumberInput');
+  const cardName = document.getElementById('cardNameInput');
+  const cardExp = document.getElementById('cardExpiryInput');
+  const cardCpf = document.getElementById('cardCpfInput');
+
+  if (cardNum) cardNum.addEventListener('input', handleCardNumberInput);
+  if (cardName) {
+    cardName.addEventListener('input', (e) => {
+      const val = e.target.value.toUpperCase();
+      const preview = document.getElementById('cardPreviewName');
+      if (preview) preview.innerText = val || 'NOME DO CLIENTE';
+    });
+  }
+  if (cardExp) {
+    cardExp.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2, 4);
+      e.target.value = val;
+      const preview = document.getElementById('cardPreviewExpiry');
+      if (preview) preview.innerText = val || 'MM/AA';
+    });
+  }
+  if (cardCpf) {
+    cardCpf.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/\D/g, '').substring(0, 11);
+      if (val.length > 9) val = val.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+      else if (val.length > 6) val = val.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+      else if (val.length > 3) val = val.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+      e.target.value = val;
+    });
+  }
+
+  document.getElementById('cardPaymentForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const instSelect = document.getElementById('cardInstallmentsSelect');
+    const selectedInst = instSelect ? instSelect.value : '1';
+    finalizePurchase(`Cartão de Crédito em ${selectedInst}x`);
+  });
+
+  // 8. Listeners do Recibo Pós-Venda
   document.getElementById('closeReceiptBtn')?.addEventListener('click', closeReceiptModal);
   document.getElementById('sendToWhatsAppBtn')?.addEventListener('click', sendOrderToWhatsApp);
 
-  // 7. Listeners do Ateliê Sob Medida
-  document.getElementById('atelieForm')?.addEventListener('submit', handleAtelieSubmit);
+  // 9. Listeners do Ateliê Sob Medida (handleCustomOrderSubmit)
+  document.getElementById('atelieForm')?.addEventListener('submit', handleCustomOrderSubmit);
 
-  // 8. Listeners do CMS
-  document.getElementById('adminTriggerBtn')?.addEventListener('click', requestCmsAccess);
+  // 10. Listeners do CMS (handleProductFormSubmit)
   document.getElementById('cmsAuthForm')?.addEventListener('submit', submitCmsPassword);
   document.getElementById('togglePasswordVisibilityBtn')?.addEventListener('click', togglePasswordVisibility);
-  document.getElementById('productCrudForm')?.addEventListener('submit', handleProductCrudSubmit);
+  document.getElementById('productCrudForm')?.addEventListener('submit', handleProductFormSubmit);
 
-  // 9. Menu Mobile
+  // 11. Menu Mobile
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
   const mobileMenu = document.getElementById('mobileMenu');
   if (mobileMenuBtn && mobileMenu) {
@@ -2427,10 +3379,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 10. Inicialização do Checkout, Máscaras e Roteador SPA (Modelo JVMODAS)
+  // 12. Listeners Online/Offline do Navegador
+  window.addEventListener('offline', () => updateCloudConnectionStatus('reconnecting'));
+  window.addEventListener('online', () => ensureRealtimeStreamConnected());
+
+  // 13. Inicialização do Checkout, Máscaras e Roteador SPA
   initCheckoutMasks();
   initRouter();
   initPublicPaymentConfig();
   checkReturnUrlParams();
-
 });
